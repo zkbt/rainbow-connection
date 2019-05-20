@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
+import copy
+
 from scipy.integrate import quad
 
 import astropy.units as u
@@ -21,6 +23,24 @@ class Light:
         How should this object appear as a string?
         '''
         return f'<{self.__class__.__name__}>'
+
+    def at(self, distance=1*u.au):
+        '''
+        Return a new Spectrum in which we're viewing
+        the current source from some distance.
+
+        Parameters
+        ----------
+        distance : astropy.units.quantity.Quantity
+            The distance at which we're viewing this source.
+        '''
+
+        # create a copy of the current spectrum
+        new = copy.deepcopy(self)
+
+        # update this copy's distance and return
+        new.distance = distance
+        return new
 
     def surface_flux(self, wavelength):
         '''
@@ -44,8 +64,9 @@ class Light:
 
         '''
         try:
+            assert(self.distance is not None)
             return 4*np.pi*self.distance**2
-        except AttributeError:
+        except (AttributeError, AssertionError):
             return 1.0
 
     def spectrum(self, wavelength):
@@ -159,7 +180,6 @@ class Light:
 
         return ax
 
-    def
     def integrated_surface_flux(self, lower=None, upper=None):
         '''
         Integrate the surface flux spectrum,
@@ -168,10 +188,10 @@ class Light:
         Parameters
         ----------
 
-        lower : astropy.u.quantity.Quantity
+        lower : astropy.units.quantity.Quantity
             The lower wavelength limit.
 
-        upper : astropy.u.quantity.Quantity
+        upper : astropy.units.quantity.Quantity
             The lower wavelength limit.
         '''
 
