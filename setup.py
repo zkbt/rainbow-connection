@@ -1,6 +1,6 @@
 '''
 This setup.py file sets up our package to be installable on any computer,
-so that folks can `import therainbowconnection` from within any directory.
+so that folks can `import rainbowconnection` from within any directory.
 
 Thanks to this file, you can...
 
@@ -48,7 +48,7 @@ if "release" in sys.argv[-1]:
     sys.exit()
 
 # a little kludge to get the version number from __version__
-exec(open('therainbowconnection/version.py').read())
+exec(open('rainbowconnection/version.py').read())
 
 # run the setup function
 setup(
@@ -71,7 +71,7 @@ setup(
     # are the directories of data that should be accessible when installed?
     include_package_data=True,
     # where are those data directories?
-    package_data = {'therainbowconnection':['data/*.txt']},
+    package_data = {'rainbowconnection':['data/*.txt']},
     # any scripts will be copied into your $PATH, so that can run from the command line
     scripts = [],
     # some descriptions about this package (for searchability?)

@@ -1,6 +1,6 @@
-from .Light import *
+from .Spectrum import *
 
-class Thermal(Light):
+class Thermal(Spectrum):
     def __init__(self, teff=5800*u.K, radius=1*u.Rsun):
 
         self.teff = teff
@@ -25,9 +25,9 @@ class Thermal(Light):
         temperature = self.teff
 
         # define variables as shortcut to the constants we need
-        h = constants.h
-        k = constants.k_B
-        c = constants.c
+        h = con.h
+        k = con.k_B
+        c = con.c
 
         # this is the thing that goes into the exponent (it's units better cancel!)
         up = h*c/(wavelength*k*temperature)

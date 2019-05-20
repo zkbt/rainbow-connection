@@ -2,7 +2,7 @@
 These tools are pulled *very* strongly from the great
 ingredients in the `colour` package. They've been
 modified and simplified here, in order to work better
-with the design of therainbowconnection.
+with the design of rainbowconnection.
 '''
 
 import matplotlib.pyplot as plt
@@ -22,6 +22,7 @@ from colour.plotting import (
 from colour.utilities import (domain_range_scale, first_item,
                               normalise_maximum, tstack)
 
+from colour import SpectralDistribution
 
 CMF = first_item(filter_cmfs('CIE 1931 2 Degree Standard Observer').values())
 

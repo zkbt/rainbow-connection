@@ -1,4 +1,4 @@
-import therainbowconnection as trc
+import rainbowconnection as trc
 import matplotlib.pyplot as plt
 plt.ion()
 def test_thermal():
