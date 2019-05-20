@@ -57,3 +57,20 @@ class Thermal(Spectrum):
 
         # return the flux, in convenient units
         return flux.to('W/(nm * m**2)')
+
+    def __repr__(self):
+        '''
+        How should this object appear as a string?
+
+        Returns
+        -------
+        s : str
+            A simple string representation.
+        '''
+
+        basic = f'{self.__class__.__name__} ({self.teff:.0f}, {self.radius})'
+        try:
+            assert(self.distance is not None)
+            return basic + f' at {self.distance}'
+        except (AssertionError, AttributeError):
+            return basic

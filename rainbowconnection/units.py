@@ -29,7 +29,10 @@ def determine_quantity(unit):
     -------
     '''
 
+    # try all the listed units
     for k in unit2name:
         if unit.is_equivalent(k):
             return unit2name[k]
+
+    # if none match, return "?"
     return '?'

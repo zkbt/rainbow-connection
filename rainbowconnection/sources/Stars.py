@@ -9,7 +9,7 @@ class Sun(Thermal):
 
     def __init__(self):
         self.radius = 1*u.Rsun
-        self.teff = 5777*u.K
+        self.teff = ((u.Lsun/(con.sigma_sb*4*np.pi*u.Rsun**2))**(1.0/4.0)).to(u.K)
 
         filename = os.path.join(data_directory, 'solarspectrum.txt')
         d = read(filename, comment='#')

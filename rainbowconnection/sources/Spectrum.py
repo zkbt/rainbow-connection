@@ -1,6 +1,8 @@
 from ..imports import *
-from ..colortools import plot_rainbow, CMF, SpectralDistribution
+from ..colortools import plot_rainbow, rainbow_spectrum, CMFs, SpectralDistribution
+import colour
 from ..units import determine_quantity
+from astropy.visualization import quantity_support
 
 class Spectrum:
     '''
@@ -145,7 +147,7 @@ class Spectrum:
     # FIXME -- for analytic functions, it'd help to define some kind of
     # a bounding box in wavelength space, so this integral could be done
     # analytically or with scipy.integrate.quad
-    def integrated_surface_flux(self, lower=None, upper=None):
+    def integrate(self, lower=None, upper=None):
         '''
         Integrate the spectrum over wavelength.
 
@@ -170,7 +172,7 @@ class Spectrum:
             raise NotImplementedError('Wavelength limits not yet OK.')
 
         w = self.default_wavelengths
-        f = self.surface_flux(w)
+        f = self.spectrum(w)
 
         return np.trapz(f, w)
 
@@ -183,7 +185,7 @@ class Spectrum:
     def plot(self,  ax=None,
                     wavelength=None,
                     rainbow=True,
-                    color='white',
+                    color='auto',
                     style='dark_background',
                     **kwargs):
         '''
@@ -217,8 +219,8 @@ class Spectrum:
 
         '''
 
-        # set up to use a dark background for the plot
-        with plt.style.context(style):
+        # set up to use a dark background for the plot; make sure units match
+        with plt.style.context(style), quantity_support():
 
             # create new ax(s), unless we're supposed to over plot on one
             if ax is None:
@@ -226,7 +228,7 @@ class Spectrum:
                 if rainbow:
                     # create a two-part grid
                     gs = GridSpec(  2, 1,
-                                    height_ratios=[0.1, 1],
+                                    height_ratios=[0.05, 1],
                                     hspace=0.0)
 
 
@@ -234,7 +236,12 @@ class Spectrum:
                     ax_rainbow = plt.subplot(gs[0])
                     plt.sca(ax_rainbow)
                     plot_rainbow(axes=ax_rainbow)
-                    plt.axis('off')
+                    ax_rainbow.get_yaxis().set_visible(False)
+                    ax_rainbow.get_xaxis().set_visible(False)
+                    ax_rainbow.set_facecolor('black')
+                    # (kludge to ensure black background for rainbow)
+                    if plt.gcf().get_facecolor() == (0.0, 0.0, 0.0, 1.0):
+                        plt.axis('off')
 
                     # create the main ax
                     ax = plt.subplot(gs[1], sharex=ax_rainbow)
@@ -242,24 +249,33 @@ class Spectrum:
 
                 else:
                     # simply create one simple ax
-                    ax = plt.subplots(1, 1)
+                    ax = plt.subplot()
 
 
             # make sure we point back at the first plot
             plt.sca(ax)
 
             # make sure at least some wavelengths are defined
-            w = (wavelength or self.default_wavelengths).to('nm')
+            w = self.wavelength(wavelength)
 
             # pull out the spectrum
             f = self.spectrum(w)
 
             # plot the spectrum
+            if color == 'auto':
+                color = self.to_color()
+                background = ax.get_facecolor()[0:3]
+                if np.max(color - background) < 0.05:
+                    print(f'''
+                    The inferred color {color} might be a little
+                    too close to {background} to be visible. Consider
+                    plotting without the `color='auto'` option.
+                    ''')
             plt.plot(w, f, color=color, label=self, **kwargs)
 
             # add the axis labels
-            wunit = w.unit.to_string('latex')
-            funit = f.unit.to_string('latex')
+            wunit = w.unit.to_string('latex_inline')
+            funit = f.unit.to_string('latex_inline')
             plt.xlabel(f'Wavelength ({wunit})')
 
             plt.ylabel(f'{determine_quantity(f.unit)} ({funit})')
@@ -273,18 +289,69 @@ class Spectrum:
             #plt.yscale('log')
 
 
-
-
-
         return ax
 
     def to_sd(self):
-        w = CMF.wavelengths
-        f = self.spectrum(w).value
-        sd = SpectralDistribution(dict(zip(w.value, f.value)))
+        '''
+        Create a `colour` SpectralDistribution from this object,
+        solely covering the visible range. This can be used
+        to estimate the true color of this spectrum.
+        '''
+
+        # pick wavelengths directly from the color-matching functions
+        w = CMFs.wavelengths*u.nm
+
+        # normalize only within the visible range
+        ok = (w < 700*u.nm) & (w > 390*u.nm)
+        w = w[ok]
+        # (note: this is a kludge to avoid making spectra
+        #  with most of their luminosity outside the visible
+        #  appear as really dark and dull. there is probably
+        #  a much cleverer way of making sure the normalization
+        #  does something reasonable.)
+
+        # calculate the spectrum at those wavelengths
+        f = self.spectrum(w)
+
+        # create the spectral distribution
+        sd = SpectralDistribution(dict(zip(w.value, f.value/np.max(f.value))))
+
+        # return it
         return sd
 
+    def to_color(self):
+        '''
+        Determine the RGB color of this spectrum.
 
+        Returns
+        -------
+        rgb : numpy.ndarray
+            3-element array containing RGB values
+            that can be fed into matplotlib.
+        '''
+
+        # create a colour SpectralDistribution
+        sd = self.to_sd()
+
+        # convert to XYZ
+        # (maybe use `k=` option for relative scaling between sources?)
+        XYZ = colour.sd_to_XYZ(sd)
+        if (np.min(XYZ) < 0) or np.max(XYZ) > 100:
+            print(f'XYZ={XYZ} is outside of [0, 100]!')
+
+        # convert to RGB
+        RGB = colour.XYZ_to_sRGB(XYZ / 100)
+        if (np.min(RGB) < 0) or np.max(RGB) > 1:
+            print(f'RGB={RGB} is outside of [0, 1]!')
+
+        # trim out underenderable colors (this is sneaky!)
+        #clipped_RGB = np.maximum(0, np.minimum(1, RGB))
+        clipped_RGB = np.maximum(0, RGB)
+        # instead of clip, should we add to everything until we get to zero?
+
+        # kludge to maximize brightness, for every color!
+        clipped_RGB /= np.max(clipped_RGB)
+        return clipped_RGB
 
     def __repr__(self):
         '''
@@ -292,13 +359,14 @@ class Spectrum:
 
         Returns
         -------
-
+        s : str
+            A simple string representation.
         '''
         try:
             assert(self.distance is not None)
-            return f'<{self.__class__.__name__} at {self.distance}>'
+            return f'{self.__class__.__name__} at {self.distance}'
         except (AssertionError, AttributeError):
-            return f'<{self.__class__.__name__}>'
+            return f'{self.__class__.__name__}'
 
     '''
     def normalize(self, power=100*u.W):
