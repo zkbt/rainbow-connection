@@ -1,6 +1,6 @@
 import therainbowconnection as trc
 import matplotlib.pyplot as plt
-
+plt.ion()
 def test_thermal():
     l = trc.Thermal()
     l.plot()

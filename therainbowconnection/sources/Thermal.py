@@ -38,7 +38,7 @@ class Thermal(Light):
         # return the intensity
         return intensity.to('W/(m**2*nm*sr)')
 
-    def flux(self, wavelength):
+    def surface_flux(self, wavelength):
         '''
         This function calculates the thermal emission flux spectrum of a surface.
 
@@ -56,4 +56,4 @@ class Thermal(Light):
         flux = self.intensity(wavelength)*np.pi*u.steradian
 
         # return the flux, in convenient units
-        return flux.to('W/(m**2*nm)')
+        return flux.to('W/(nm * m**2)')

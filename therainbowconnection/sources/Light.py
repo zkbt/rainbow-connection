@@ -2,16 +2,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 
+from scipy.integrate import quad
+
 import astropy.units as u
 from astropy import constants
 
 from colour.plotting import plot_visible_spectrum, plot_single_sd
 from colour import SpectralDistribution
 
-# the default grid of wavelengths
-default_wavelengths = np.arange(200, 1000)*u.nm
+from ..colortools import plot_rainbow, CMF
 
 class Light:
+    # the default grid of wavelengths
+    default_wavelengths = np.arange(200, 1000)*u.nm
 
     def __repr__(self):
         '''
@@ -19,8 +22,7 @@ class Light:
         '''
         return f'<{self.__class__.__name__}>'
 
-
-    def flux(self, wavelength):
+    def surface_flux(self, wavelength):
         '''
         The surface flux of the light source,
         in units of W/nm/m**2.
@@ -37,14 +39,40 @@ class Light:
         '''
         return 1*u.m**2
 
+    def normalization(self):
+        '''
+
+        '''
+        try:
+            return 4*np.pi*self.distance**2
+        except AttributeError:
+            return 1.0
+
     def spectrum(self, wavelength):
         '''
-        The specific luminosity of the light source,
-        in units of W/nm.
-        '''
-        return self.surface_area()*self.flux(wavelength)
+        The spectrum of the light source,
+        as specific luminosity (W/nm)
+        or specific flux (W/nm/m**2).
 
-    def plot(self, ax=None, wavelength=None, rainbow=True):
+        Parameters
+        ----------
+        wavelength : numpy.ndarray
+            The wavelengths at which we want the spectrum.
+        '''
+
+        # simplify the factor as best you can
+        factor = (self.surface_area()/self.normalization()).decompose()
+        return factor*self.surface_flux(wavelength)
+
+
+    def to_sd(self):
+        w = CMF.wavelengths
+        f = self.spectrum(w).value
+        sd = SpectralDistribution(dict(zip(w.value, f.value)))
+        return sd
+
+    def plot(self, ax=None, wavelength=None, rainbow=True,
+                   color='white', **kwargs):
         '''
         A quick tool to plot a spectrum,
         in units of W/nm (specific luminosity).
@@ -64,51 +92,56 @@ class Light:
         rainbow : bool
             Should we add an extra rainbow above
             the plot, to indicate visible light?
+
+        color : str
+            The color for drawing the spectrum.
+            'auto' should represent
+
         '''
 
         # set up to use a dark background for the plot
         with plt.style.context('dark_background'):
 
-            # create an ax, unless we're supposed to over plot on one
+            # create new ax(s), unless we're supposed to over plot on one
             if ax is None:
+                # decide whether to add a horizontal rainbow cartoon
                 if rainbow:
-                    _, both_ax = plt.subplots(2, 1,
-                                sharex=True,
-                                gridspec_kw=dict(height_ratios=[0.2, 1]))
+                    # create a two-part grid
+                    gs = GridSpec(  2, 1,
+                                    height_ratios=[0.1, 1],
+                                    hspace=0.0)
 
-                    ax_rainbow, ax = both_ax
 
-                    # plot a cartoon rainbow
+                    # plot a cartoon rainbow, in a box above
+                    ax_rainbow = plt.subplot(gs[0])
                     plt.sca(ax_rainbow)
-                    #plot_visible_spectrum(axes=ax_rainbow)
-                    #plt.axis('off')
-                    # make sure we point back at
-                    plt.sca(ax)
+                    plot_rainbow(axes=ax_rainbow)
+                    plt.axis('off')
+
+                    # create the main ax
+                    ax = plt.subplot(gs[1], sharex=ax_rainbow)
+
 
                 else:
+                    # simply create one simple ax
                     ax = plt.subplots(1, 1)
 
 
-
+            # make sure we point back at the first plot
+            plt.sca(ax)
 
             # make sure at least some wavelengths are defined
-            w = (wavelength or default_wavelengths).to('nm')
+            w = (wavelength or self.default_wavelengths).to('nm')
 
             # pull out the spectrum
-            f = self.spectrum(w).to('W/nm')
+            f = self.spectrum(w)
 
             # plot the spectrum
-            plt.plot(w, f, color='white', label=self)
-
-            if rainbow:
-                sd = SpectralDistribution(dict(zip(w.value, f.value)))
-                plot_single_sd(sd)
-            else:
-                plt.plot(w, f)
+            plt.plot(w, f, color=color, label=self, **kwargs)
 
             # add the axis labels
             wunit = w.unit.to_string('latex')
-            funit = w.unit.to_string('latex')
+            funit = f.unit.to_string('latex')
             plt.xlabel(f'Wavelength ({wunit})')
             plt.ylabel(f'Flux ({funit})')
 
@@ -120,13 +153,17 @@ class Light:
             #plt.xscale('log')
             #plt.yscale('log')
 
+
+
+
+
         return ax
 
-
-    def integrate(self, limits=[]):
+    def
+    def integrated_surface_flux(self, lower=None, upper=None):
         '''
-        Integrate the spectrum,
-        returning units of W.
+        Integrate the surface flux spectrum,
+        returning units of W/m**2.
 
         Parameters
         ----------
@@ -138,13 +175,19 @@ class Light:
             The lower wavelength limit.
         '''
 
+        if lower is not None:
+            raise NotImplementedError('Wavelength limits not yet OK.')
 
-        wlower = lower or default_wavelengths[0]
-        wupper = upper or default_wavelengths[-1]
+        w = self.default_wavelengths
+        f = self.surface_flux(w)
 
-        return scipy.integrate.quad(self.spectrum,
-                                    wlower,
-                                    wupper)
+        return np.trapz(f, w)
+
+        #np.trapz(f.value, w.value)*f.unit*w.unit
+        #wlower = lower or self.default_wavelengths[0]
+        #wupper = upper or self.default_wavelengths[-1]
+        #return quad(self.spectrum, wlower, wupper)
+
     '''
     def normalize(self, power=100*u.W):
 

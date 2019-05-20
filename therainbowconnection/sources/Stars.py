@@ -15,11 +15,16 @@ class Sun(Thermal):
         d = read(filename, comment='#')
         self._wavelength = d['wavelength'].data
         self._flux = d['irradiance'].data
+        self.default_wavelengths = self._wavelength*u.nm
 
-    def flux(self, wavelength):
+
+
+    def surface_flux(self, wavelength):
 
         w, f = bintogrid(self._wavelength,
                          self._flux,
                          newx=wavelength.to('nm').value)
 
-        return f*u.W/u.m**2/u.nm
+        # convert back to the surface flux from the Sun
+        factor = ((1*u.au)**2/(1*u.Rsun)**2).decompose()
+        return factor*f*u.W/u.nm/u.m**2
