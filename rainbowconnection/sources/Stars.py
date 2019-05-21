@@ -1,4 +1,4 @@
-from .Thermal import *
+from .thermal import *
 from craftroom.resample import bintogrid
 from astropy.io.ascii import read
 import pkg_resources, os

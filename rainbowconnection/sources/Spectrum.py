@@ -56,16 +56,13 @@ class Spectrum:
         The surface area of the light source,
         in units like m**2.
 
-        (This should likely by overwritten by inheriting classes.)
-
         Returns
         -------
         surface_area : astropy.units.quantity.Quantity
             The emitting area of the surface, usually in m**2.
         '''
+        return 4*np.pi*self.radius**2
 
-        # make a very simple surface area
-        return 1*u.m**2
 
     def wavelength(self, wavelength=None):
         '''
@@ -368,11 +365,26 @@ class Spectrum:
         except (AssertionError, AttributeError):
             return f'{self.__class__.__name__}'
 
-    '''
-    def normalize(self, power=100*u.W):
+    def set_power(self, power=100*u.W):
+        '''
+        Change the radius of the object so that it will
+        emit a specified power, with the same spectral shape.
 
-        #Renormalize the
-        total = scipy.integrate.trapz(self.flux, self.wavelength)
+        Parameters
+        ----------
+        power : astropy.units.quantity.Quantity
+            The total power we want the object to emit.
+        '''
+
+        # calculate the total luminosity of this object
+        total = self.integrate()
+
+        # make sure we're dealing with an actual luminosity
+        assert(total.unit.is_equivalent('W'))
+
+        # calculation a new normalization
+        normalization = (power/total).decompose()
+
+        # change the radius of this object
+        self.radius *= np.sqrt(normalization)
         self.power = power
-        self.flux = self.flux/total*power
-    '''

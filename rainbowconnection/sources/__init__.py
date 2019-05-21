@@ -1,8 +1,4 @@
-from .Spectrum import Spectrum
-from .Thermal import Thermal
-from .Stars import Sun
-'''
-from .Star import Star
-from .Sun import Sun
-from .SpectrumBulbs import LED, CFL, Incandescent, Sodium
-'''
+from .spectrum import Spectrum
+from .thermal import Thermal
+from .stars import Sun#, PHOENIX
+from .lightbulbs import Sodium, Incandescent#, LED, CFL, Incandescent, Sodium

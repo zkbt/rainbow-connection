@@ -1,13 +1,10 @@
-from .Spectrum import *
+from .spectrum import *
 
 class Thermal(Spectrum):
     def __init__(self, teff=5800*u.K, radius=1*u.Rsun):
 
         self.teff = teff
         self.radius = radius
-
-    def surface_area(self):
-        return 4*np.pi*self.radius**2
 
     def intensity(self, wavelength):
         '''
@@ -74,3 +71,33 @@ class Thermal(Spectrum):
             return basic + f' at {self.distance}'
         except (AssertionError, AttributeError):
             return basic
+
+    def integrate(self, lower=None, upper=None):
+        '''
+        Integrate the spectrum over wavelength.
+
+        It gives a number with units identical to the results of
+        `.spectrum()` but without the wavelength (W or W/m**2).
+
+        Parameters
+        ----------
+        lower : astropy.units.quantity.Quantity
+            The lower wavelength limit.
+
+        upper : astropy.units.quantity.Quantity
+            The lower wavelength limit.
+
+        Returns
+        -------
+        integral : astropy.units.quantity.Quantity
+            The integral over wavelength.
+        '''
+
+        # if wavelength limits are used, revert back to the numerical integral
+        if (lower is not None) or (upper is not None):
+            return super().integrate(lower=lower, upper=upper)
+
+        # if there are infinite wavelength limits, do the integral analytically
+        surface_flux = con.sigma_sb*self.teff**4
+        factor = (self.surface_area()/self.normalization()).decompose()
+        return factor*surface_flux
