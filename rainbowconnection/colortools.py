@@ -146,9 +146,9 @@ def rainbow_spectrum(axes=None,
     colours = XYZ_to_plotting_colourspace(XYZ)
 
     # normalize the colors to their maximum?
-    colours = COLOUR_STYLE_CONSTANTS.colour.colourspace.encoding_cctf(
-        normalise_maximum(colours))
-
+    #colours = COLOUR_STYLE_CONSTANTS.colour.colourspace.encoding_cctf(
+    #    normalise_maximum(colours))
+    colours = np.maximum(0, colours/np.max(colours))
 
     x_min, x_max = min(w), max(w)
     y_min, y_max = 0, max(f) + max(f) * 0.05
@@ -165,17 +165,14 @@ def rainbow_spectrum(axes=None,
     axes.add_patch(polygon)
 
     # draw bars, with the colors at each vertical stripe
-    padding = 0.1
-    dw = np.diff(w)*.1
+    padding = 0.0
+    dw = np.mean(np.diff(w))
     axes.bar(
-        x=wavelength[ok][:-1] - padding,
-        height=max(flux[ok]),
-        width=dw + padding,
-        color=colours[:-1],
+        x=w,
+        height=f,
+        width=dw,
+        color=colours,
         clip_path=polygon,
         align='edge')
-
-    # plot the actual spectrum?
-    axes.plot(wavelength, flux, '.')
 
     return axes

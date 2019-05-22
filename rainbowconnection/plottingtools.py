@@ -3,6 +3,7 @@ from .colortools import plot_rainbow
 def setup_axes_with_rainbow(ax=None, rainbow=True):
     # create new ax(s), unless we're supposed to over plot on one
     if ax is None:
+        plt.figure(figsize=(5, 2.5))
         # decide whether to add a horizontal rainbow cartoon
         if rainbow:
             # create a two-part grid

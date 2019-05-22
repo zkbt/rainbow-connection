@@ -1,7 +1,7 @@
 from ..imports import *
 from ..units import determine_quantity
 from ..plottingtools import setup_axes_with_rainbow
-
+from .transmitted import TransmittedSpectrum
 
 class Atmosphere:
     def __repr__(self):
@@ -116,3 +116,10 @@ class Atmosphere:
         # set the zenith angle and airmass
         self.zenith_angle = z
         self.airmass = 1/np.cos(z)
+
+    def transmit(self, spectrum, wavelength=None, zenith_angle=None):
+        '''
+        '''
+
+        # create
+        return TransmittedSpectrum(source=spectrum, atmosphere=self)

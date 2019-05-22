@@ -244,17 +244,7 @@ class Spectrum:
             wunit = w.unit.to_string('latex_inline')
             funit = f.unit.to_string('latex_inline')
             plt.xlabel(f'Wavelength ({wunit})')
-
             plt.ylabel(f'{determine_quantity(f.unit)} ({funit})')
-
-            plt.xlim(np.min(w).value, np.max(w).value)
-
-            # set the ylimits
-            #plt.ylim(1e-20*max(self.flux), 10*max(self.flux))
-
-            #plt.xscale('log')
-            #plt.yscale('log')
-
 
         return ax
 
@@ -309,7 +299,8 @@ class Spectrum:
         # convert to RGB
         RGB = colour.XYZ_to_sRGB(XYZ / 100)
         if (np.min(RGB) < 0) or np.max(RGB) > 1:
-            print(f'RGB={RGB} is outside of [0, 1]!')
+            pass
+            #print(f'RGB={RGB} is outside of [0, 1]!')
 
         # trim out underenderable colors (this is sneaky!)
         #clipped_RGB = np.maximum(0, np.minimum(1, RGB))
@@ -358,3 +349,139 @@ class Spectrum:
         # change the radius of this object
         self.radius *= np.sqrt(normalization)
         self.power = power
+
+
+    def plot_rgb(self,  ax=None,
+                        wavelength=None,
+                        rainbow=True,
+                        color='auto',
+                        style='dark_background',
+                        **kwargs):
+        '''
+        A quick tool to plot a spectrum, just as RGB bars.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes._subplots.AxesSubplot
+            Specify an axes object into which
+            this plot should be drawn. This allows
+            overplotting multiple spectra, for example
+            with a structure like
+                ```
+                ax = Thermal(teff=5800*u.K, radius=1*u.Rsun).plot()
+                ax = Sun.plot(ax)
+                ```
+            To overplot on current axes use `ax=plt.gca()`.
+
+        wavelength : astropy.units.quantity.Quantity
+            A grid of wavelengths on which the spectrum should
+            be plotted. If None, the function defaults to
+            covering visible wavelengths at 1nm resolution.
+
+        rainbow : bool
+            Should we add an extra rainbow above the plot,
+            to indicate how wavelengths match to visible light?
+
+        color : str
+            The color for drawing the spectrum.
+            'auto' represents the actual visible color.
+
+        '''
+
+        # set up to use a dark background for the plot; make sure units match
+        with plt.style.context(style), quantity_support():
+
+            # setup the basic axes
+            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow)
+
+            # make sure at least some wavelengths are defined
+            w = self.wavelength(wavelength)
+
+            rgb = self.to_color()
+
+            blue = [400, 495]
+            green = [495, 590]
+            red = [590, 685]
+
+            centers = [np.mean(c) for c in [red, green, blue]]
+            widths = [c[1] - c[0] for c in [red, green, blue]]
+            colors = [np.array([1, 0, 0]),
+                      np.array([0, 1, 0]),
+                      np.array([0, 0, 1])]
+
+            plt.bar(centers, rgb*100, widths, color=colors, edgecolor='white')
+
+
+            # add the axis labels
+            wunit = w.unit.to_string('latex_inline')
+            plt.xlabel(f'Wavelength ({wunit})')
+            plt.ylabel(f'Relative Brightness (%)')
+
+        return ax
+
+    def plot_as_rainbow(self,  ax=None,
+                                rainbow=True,
+                                color='auto',
+                                style='dark_background',
+                                **kwargs):
+        '''
+        A quick tool to plot a spectrum, just as RGB bars.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes._subplots.AxesSubplot
+            Specify an axes object into which
+            this plot should be drawn. This allows
+            overplotting multiple spectra, for example
+            with a structure like
+                ```
+                ax = Thermal(teff=5800*u.K, radius=1*u.Rsun).plot()
+                ax = Sun.plot(ax)
+                ```
+            To overplot on current axes use `ax=plt.gca()`.
+
+        wavelength : astropy.units.quantity.Quantity
+            A grid of wavelengths on which the spectrum should
+            be plotted. If None, the function defaults to
+            covering visible wavelengths at 1nm resolution.
+
+        rainbow : bool
+            Should we add an extra rainbow above the plot,
+            to indicate how wavelengths match to visible light?
+
+        color : str
+            The color for drawing the spectrum.
+            'auto' represents the actual visible color.
+
+        '''
+
+        # set up to use a dark background for the plot; make sure units match
+        with plt.style.context(style), quantity_support():
+
+            # setup the basic axes
+            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow)
+
+            # make sure at least some wavelengths are defined
+            w = self.wavelength(np.arange(330, 760, 1)*u.nm)
+            f = self.spectrum(w)
+            # KLUDGE?
+            norm = np.max(f.value[(w > 400*u.nm) & (w < 650*u.nm)]) / 100
+            rainbow_spectrum(axes=ax, wavelength=w.to('nm').value, flux=f.value/norm)
+            plt.plot(w, f/norm, color='white')
+
+            # add the axis labels
+            wunit = w.unit.to_string('latex_inline')
+            plt.xlabel(f'Wavelength ({wunit})')
+            plt.ylabel(f'Relative Brightness (%)')
+
+        return ax
+
+    def cartoon_sun(self):
+        rgb = self.to_color()
+        with plt.style.context('dark_background'):
+            fi = plt.figure(figsize=(5, 2.5))
+            ax = fi.add_axes([0, 0, 1, 1])
+            plt.scatter(0, 0, c=rgb, s=8000)
+            plt.xticks([])
+            plt.yticks([])
+            plt.axis('off')
