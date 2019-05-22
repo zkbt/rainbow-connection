@@ -9,6 +9,7 @@ from astropy.visualization import quantity_support
 
 from craftroom.resample import bintogrid
 
+from tqdm import tqdm
 
 from matplotlib.gridspec import GridSpec
 from scipy.integrate import quad

@@ -117,6 +117,24 @@ class Spectrum:
             # by default, simply return a luminosity
             return 1.0
 
+    def angular_size(self):
+        '''
+        The angular size of the light source (if viewed from a distance).
+        '''
+
+        try:
+            # if there's a distance, return an angular size
+            assert(self.distance is not None)
+            return np.arctan(self.radius/self.distance).to('deg')
+        except (AttributeError, AssertionError):
+            # complain if no distance is defined
+            raise ValueError('''
+            This Spectrum has no .distance attribute.
+            Please consider using `.at(distance)` to
+            create a new light source as viewed from
+            a distance.
+            ''')
+
     def at(self, distance=1*u.au):
         '''
         Create a new Spectrum representing the current
@@ -477,7 +495,14 @@ class Spectrum:
         return ax
 
     def cartoon_sun(self):
+        '''
+        Create a simple cartoon of the star,
+        with appropriate color and angular size.
+        '''
+
+        # figure out the color of the star
         rgb = self.to_color()
+
         with plt.style.context('dark_background'):
             fi = plt.figure(figsize=(5, 2.5))
             ax = fi.add_axes([0, 0, 1, 1])

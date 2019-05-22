@@ -1,46 +1,33 @@
 from .atmosphere import *
 
-class Earth(Atmosphere):
-    def __init__(self):
+class Earth(DiscreteAtmosphere):
+    '''
+    Earth's transmission spectrum.
+    '''
 
-        # load the vertical transmission through Earth's atmosphere
+    def read_transmission(self, **kwargs):
+        '''
+        Read Earth's transmission spectrum in from a file
+        and define the required attributes:
+
+            ._wavelengths (with units of wavelength)
+            ._tau_zenith_reference (unitless)
+            .H (with units of length)
+            .radius (with units of length)
+        '''
+
+        # load the ESO vertical transmission through Earth's atmosphere
         filename = os.path.join(data_directory, 'earthtransmission.txt')
-
-        # store th
         d = ascii.read(filename, comment='#')
-        self._wavelength = d['wavelength'].data*1e3
-        self._transmission = d['transmission'].data
-        self._tau_zenith = -np.log(self._transmission)
-        self.default_wavelengths = self._wavelength*u.nm
-        self.H = 8*u.km
+
+        # calculate the optical depth at zenith
+        self._wavelength = d['wavelength'].data*1e3*u.nm
+        self._transmission_zenith = d['transmission'].data
+        self._tau_zenith_reference = -np.log(self._transmission_zenith)
+
+        # define geometry of the atmosphere (how spherical?)
+        mu = 29
+        T = 273*u.K
+        g = 9.8*u.m/u.s**2
+        self.H = (con.k_B*T/mu/g/con.m_p).to('km')
         self.radius = 1*u.Rearth
-        self.fortney_factor = np.sqrt(2*np.pi*self.radius/self.H).decompose()
-
-        self.set_zenith_angle()
-
-    def transmission(self, wavelength, zenith_angle=None):
-
-        # update the zenith angle, if necessary
-        if zenith_angle is not None:
-            self.set_zenith_angle(zenith_angle)
-
-        # make sure at least some grid of wavelengths is defined
-        w = self.wavelength(wavelength)
-
-        # figure out the transmission at this altitude
-        # FIXME -- this is a major kludge! do the integral!
-        effective_airmass = np.minimum(self.fortney_factor, self.airmass)
-        tau = self._tau_zenith*effective_airmass
-
-
-        # bin this spectrum to the particular wavelength grid
-        # FIXME: binning choice gets real scary with transmission
-        neww, newt = bintogrid(self._wavelength, tau,
-                         newx=w.to('nm').value,
-                         drop_nans=False)
-
-        # make sure the wavelengths match up
-        assert(np.all(neww == w.to('nm').value))
-
-        # return the binned transmission
-        return np.exp(-newt)

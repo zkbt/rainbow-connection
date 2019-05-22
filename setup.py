@@ -88,7 +88,8 @@ setup(
                       'matplotlib',
                       'jupyter',
                       'astropy',
-                      'colour-science'],
+                      'colour-science',
+                      'tqdm'],
 
     # the packages in `key` will be installed if folks run `pip install henrietta[key]`
     extras_require={},

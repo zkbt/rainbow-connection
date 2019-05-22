@@ -1,7 +1,7 @@
 from ..imports import *
 from ..units import determine_quantity
 from ..plottingtools import setup_axes_with_rainbow
-from .transmitted import TransmittedSpectrum
+from .sunset import Sunset
 
 class Atmosphere:
     def __repr__(self):
@@ -13,7 +13,9 @@ class Atmosphere:
         s : str
             A simple string representation.
         '''
-        return f'{self.__class__.__name__}'
+        scale = (self.H/self.radius).decompose()
+        #H/R={scale},
+        return f'{self.__class__.__name__}Atmosphere ({self.zenith_angle} from zenith, {self.altitude} scale heights from reference)'
 
     # FIXME (maybe both spectrum and atmosphere should inherit from the same thing?)
     def wavelength(self, wavelength=None):
@@ -114,12 +116,129 @@ class Atmosphere:
         '''
 
         # set the zenith angle and airmass
-        self.zenith_angle = z
-        self.airmass = 1/np.cos(z)
+        self.zenith_angle = np.minimum(z, 90*u.deg)
+        self.airmass = 1/np.cos(self.zenith_angle)
 
-    def transmit(self, spectrum, wavelength=None, zenith_angle=None):
+    def set_altitude(self, altitude=0):
         '''
+        Set how many atmospheric scale heights we are
+        above or below the reference radius of this
+        atmosphere.
+
+        Parameters
+        ----------
+        altitude : float
+            The altitude at which we should be floating
+            in the atmosphere, in units of scale heights.
+            For example, +1.0 is one scale height above
+            the reference radius and therefore a more
+            transparent atmosphere, and -1.0 is one scale
+            height deeper than the reference radius and
+            therefore a more opaque atmosphere.
+            Negative altitudes are probably a weird concept
+            if the reference radius is the surface of a
+            rocky planet, but they're quite reasonable
+            on gas-dominated planets.
+        '''
+        self.altitude = altitude
+        self.tau_zenith = self._tau_zenith_reference*np.exp(-altitude)
+
+    def transmit(self, spectrum):
+        '''
+        Calculate the spectrum of light that results from
+        transmitting a known light source through this
+        atmosphere.
+
+        Parameters
+        ----------
+        spectrum : Spectrum
+            Any light source that you want to transmit.
         '''
 
-        # create
-        return TransmittedSpectrum(source=spectrum, atmosphere=self)
+        # create a composite object, linking the source and the atmosphere
+        return Sunset(source=spectrum, atmosphere=self)
+
+class DiscreteAtmosphere(Atmosphere):
+    '''
+    The DiscreteAtmosphere represents an atmosphere
+    whose transmission as a function of wavelength
+    can be represented as a grid of zenithward optical
+    depths. Most pre-calculated models will fall
+    into this category.
+    '''
+
+    def __init__(self, zenith_angle=0.0*u.deg, altitude=0.0, **kwargs):
+        '''
+        In inherited classes, this initialization relies on the
+        existence of a method called ".read_transmission"
+        that will create the attributes:
+            ._wavelengths (with units of wavelength)
+            ._tau_zenith_reference (unitless)
+            .H (with units of length)
+            .radius (with units of length)
+        '''
+
+        # read the transmission spectrum data
+        self.read_transmission(**kwargs)
+        self.default_wavelengths = self._wavelength
+
+        # set the zenith angle (or fall back to the current setting)
+        self.set_zenith_angle(zenith_angle)
+
+        # set the altitude at which we're hovering
+        self.set_altitude(altitude)
+
+    def fortney_factor(self):
+        # calculate the fortney factor = ratio of slant/vertical optical depths
+        return np.sqrt(2*np.pi*self.radius/self.H).decompose()
+
+    def transmission(self, wavelength=None, zenith_angle=None, altitude=None):
+        '''
+        Calculate the transmission through the atmosphere.
+
+        Parameters
+        ----------
+        wavelength : astropy.units.quantity.Quantity
+            The wavelengths on which we want the transmission.
+
+        zenith_angle : astropy.units.quantity.Quantity
+            The angle from zenith along which transmission
+            should be calculated.
+
+        altitude : float
+            The altitude at which we should be floating
+            in the atmosphere, in units of scale heights.
+
+        Returns
+        -------
+        transmission : numpy.ndarray
+            The fractional transmission through the atmosphere.
+        '''
+
+        # update the zenith angle, if necessary
+        if zenith_angle is not None:
+            self.set_zenith_angle(zenith_angle)
+
+        # update the altitude, if necessary
+        if altitude is not None:
+            self.set_altitude(altitude)
+
+        # make sure at least some grid of wavelengths is defined
+        w = self.wavelength(wavelength)
+
+        # figure out the transmission at this altitude
+        # FIXME -- this is a major kludge! do the integral!
+        effective_airmass = np.minimum(self.fortney_factor(), self.airmass)
+        tau = self.tau_zenith*effective_airmass
+
+        # bin this spectrum to the particular wavelength grid
+        # FIXME: binning choice gets real scary with transmission
+        neww, newt = bintogrid(self._wavelength, np.exp(-tau),
+                         newx=w.to('nm').value,
+                         drop_nans=False)
+
+        # make sure the wavelengths match up
+        assert(np.all(neww == w.to('nm').value))
+
+        # return the binned transmission
+        return newt

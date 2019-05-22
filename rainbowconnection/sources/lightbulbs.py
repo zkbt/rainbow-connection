@@ -18,7 +18,7 @@ class LightBulb(Spectrum):
             A simple string representation.
         '''
 
-        basic = f'{self.__class__.__name__} Light Bulb ({self.power})'
+        basic = f'{self.__class__.__name__}LightBulb ({self.power})'
         try:
             assert(self.distance is not None)
             return basic + f' at {self.distance}'
