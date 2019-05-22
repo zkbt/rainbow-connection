@@ -16,7 +16,6 @@ class Earth(Atmosphere):
         self.radius = 1*u.Rearth
         self.fortney_factor = np.sqrt(2*np.pi*self.radius/self.H).decompose()
 
-
         self.set_zenith_angle()
 
     def transmission(self, wavelength, zenith_angle=None):
