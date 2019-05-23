@@ -197,74 +197,6 @@ class Spectrum:
         #return quad(self.spectrum, wlower, wupper)
 
 
-    def plot(self,  ax=None,
-                    wavelength=None,
-                    rainbow=True,
-                    color='auto',
-                    style='dark_background',
-                    **kwargs):
-        '''
-        A quick tool to plot a spectrum.
-
-        Parameters
-        ----------
-        ax : matplotlib.axes._subplots.AxesSubplot
-            Specify an axes object into which
-            this plot should be drawn. This allows
-            overplotting multiple spectra, for example
-            with a structure like
-                ```
-                ax = Thermal(teff=5800*u.K, radius=1*u.Rsun).plot()
-                ax = Sun.plot(ax)
-                ```
-            To overplot on current axes use `ax=plt.gca()`.
-
-        wavelength : astropy.units.quantity.Quantity
-            A grid of wavelengths on which the spectrum should
-            be plotted. If None, the function defaults to
-            covering visible wavelengths at 1nm resolution.
-
-        rainbow : bool
-            Should we add an extra rainbow above the plot,
-            to indicate how wavelengths match to visible light?
-
-        color : str
-            The color for drawing the spectrum.
-            'auto' represents the actual visible color.
-
-        '''
-
-        # set up to use a dark background for the plot; make sure units match
-        with plt.style.context(style), quantity_support():
-
-            # setup the basic axes
-            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow)
-
-            # make sure at least some wavelengths are defined
-            w = self.wavelength(wavelength)
-
-            # pull out the spectrum
-            f = self.spectrum(w)
-
-            # plot the spectrum
-            if color == 'auto':
-                color = self.to_color()
-                background = ax.get_facecolor()[0:3]
-                if np.max(color - background) < 0.05:
-                    print(f'''
-                    The inferred color {color} might be a little
-                    too close to {background} to be visible. Consider
-                    plotting without the `color='auto'` option.
-                    ''')
-            plt.plot(w, f, color=color, label=self, **kwargs)
-
-            # add the axis labels
-            wunit = w.unit.to_string('latex_inline')
-            funit = f.unit.to_string('latex_inline')
-            plt.xlabel(f'Wavelength ({wunit})')
-            plt.ylabel(f'{determine_quantity(f.unit)} ({funit})')
-
-        return ax
 
     def to_sd(self):
         '''
@@ -367,6 +299,134 @@ class Spectrum:
         # change the radius of this object
         self.radius *= np.sqrt(normalization)
         self.power = power
+
+    def mean_intensity(self, wavelength=None):
+        '''
+        Calculate the mean intensity field created by the source.
+
+        The mean intensity field represents the intensity
+        of the source, smeared over a full 4pi steradians.
+
+        (This makes sense only for spectra viewed from a distance.)
+        '''
+
+        # what is the intensity of the disk
+        F_disk = self.spectrum(wavelength)
+
+
+        # make sure we're dealing with a flux
+        assert(F_disk.unit.is_equivalent, u.W/u.m**2/u.nm)
+
+        # calculate the mean intensity
+        solid_angle = np.pi*self.angular_size()**2
+
+        # calculate the mean intensity field
+        J = F_disk/4/np.pi
+
+        return J
+
+    def disk_intensity(self, wavelength=None):
+        '''
+        Calculate the intensity of the disk of the source.
+
+        The disk intensity represents the intensity of staring
+        directly at the disk. The flux of the source is its
+        intensity integrated over solid angle, so two sources
+        with the same intensities can have very different
+        fluxes, based on their apparent angular sizes.
+        For example, the Sun seen `.at` different distances
+        will have different fluxes but the same disk intensity.
+
+        (This makes sense only for spectra viewed from a distance.)
+        '''
+
+        # what is the intensity of the disk
+        F_disk = self.spectrum(wavelength)
+
+
+        # make sure we're dealing with a flux
+        assert(F_disk.unit.is_equivalent, u.W/u.m**2/u.nm)
+
+        # calculate the mean intensity
+        solid_angle = np.pi*self.angular_size()**2
+        I_disk = F_disk/solid_angle
+
+        return I_disk
+
+    # ===================================
+    #
+    #        PLOTTING METHODS
+    #
+    # ===================================
+    
+    def plot(self,  ax=None,
+                    wavelength=None,
+                    rainbow=True,
+                    color='auto',
+                    style='dark_background',
+                    **kwargs):
+        '''
+        A quick tool to plot a spectrum.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes._subplots.AxesSubplot
+            Specify an axes object into which
+            this plot should be drawn. This allows
+            overplotting multiple spectra, for example
+            with a structure like
+                ```
+                ax = Thermal(teff=5800*u.K, radius=1*u.Rsun).plot()
+                ax = Sun.plot(ax)
+                ```
+            To overplot on current axes use `ax=plt.gca()`.
+
+        wavelength : astropy.units.quantity.Quantity
+            A grid of wavelengths on which the spectrum should
+            be plotted. If None, the function defaults to
+            covering visible wavelengths at 1nm resolution.
+
+        rainbow : bool
+            Should we add an extra rainbow above the plot,
+            to indicate how wavelengths match to visible light?
+
+        color : str
+            The color for drawing the spectrum.
+            'auto' represents the actual visible color.
+
+        '''
+
+        # set up to use a dark background for the plot; make sure units match
+        with plt.style.context(style), quantity_support():
+
+            # setup the basic axes
+            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow)
+
+            # make sure at least some wavelengths are defined
+            w = self.wavelength(wavelength)
+
+            # pull out the spectrum
+            f = self.spectrum(w)
+
+            # plot the spectrum
+            if color == 'auto':
+                color = self.to_color()
+                background = ax.get_facecolor()[0:3]
+                if np.max(color - background) < 0.05:
+                    print(f'''
+                    The inferred color {color} might be a little
+                    too close to {background} to be visible. Consider
+                    plotting without the `color='auto'` option.
+                    ''')
+            plt.plot(w, f, color=color, label=self, **kwargs)
+
+            # add the axis labels
+            wunit = w.unit.to_string('latex_inline')
+            funit = f.unit.to_string('latex_inline')
+            plt.xlabel(f'Wavelength ({wunit})')
+            plt.ylabel(f'{determine_quantity(f.unit)} ({funit})')
+
+        return ax
 
 
     def plot_rgb(self,  ax=None,

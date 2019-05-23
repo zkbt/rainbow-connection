@@ -1,5 +1,6 @@
 from ..imports import *
 from ..sources import Spectrum
+from ..animatetools import *
 
 class Sunset(Spectrum):
 
@@ -62,6 +63,7 @@ class Sunset(Spectrum):
         # return the transmitted spectrum
         return s*t
 
+
     def plot_sunset(self, overhead=45, set=95):
 
         zenith_angles = np.arange(overhead, set, 1)*u.deg
@@ -80,7 +82,29 @@ class Sunset(Spectrum):
                 #colors.append(self.to_color())
                 self.disk(z, 0.0)
 
-            #plt.scatter(azimuth_angles, elevation_angles, c=colors, s=400)
+
+    def animate_sunset(self, maxelevation=30, minelevation=-5, filename='sunset.mp4'):
+        wri = get_writer(filename)
+        zenith_angles = np.arange(90-maxelevation, 90-minelevation, 0.5)*u.deg
+        #azimuth_angles = np.zeros_like(zenith_angles)
+
+        colors = []
+
+        with plt.style.context('dark_background'), quantity_support():
+            fi, ax = plt.subplots(1,1)
+
+            with wri.saving(fi, filename, 400):
+
+                for z in tqdm(zenith_angles):
+                    plt.cla()
+                    self.set_zenith_angle(z)
+                    #colors.append(self.to_color())
+                    self.disk(z, 0.0)
+                    plt.axis('scaled')
+                    plt.xlim(-5*u.deg, 5*u.deg)
+                    plt.ylim(0*u.deg, maxelevation*u.deg + self.source.angular_size()*2)
+
+                    wri.grab_frame()
 
     def disk(self, zenith_angle, azimuth_angle=0*u.deg):
         '''

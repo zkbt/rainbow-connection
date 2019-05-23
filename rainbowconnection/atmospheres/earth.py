@@ -20,10 +20,11 @@ class Earth(DiscreteAtmosphere):
         filename = os.path.join(data_directory, 'earthtransmission.txt')
         d = ascii.read(filename, comment='#')
 
+
         # calculate the optical depth at zenith
         self._wavelength = d['wavelength'].data*1e3*u.nm
         self._transmission_zenith = d['transmission'].data
-        self._tau_zenith_reference = -np.log(self._transmission_zenith)
+
 
         # define geometry of the atmosphere (how spherical?)
         mu = 29
@@ -31,3 +32,11 @@ class Earth(DiscreteAtmosphere):
         g = 9.8*u.m/u.s**2
         self.H = (con.k_B*T/mu/g/con.m_p).to('km')
         self.radius = 1*u.Rearth
+
+        # the file is for Cerro Paranal at 2640m
+        # let's move it down to sea level
+        tau_zenith_paranal = -np.log(self._transmission_zenith)
+        paranal_altitude = 2640*u.m
+        factor = np.exp(paranal_altitude/self.H)
+        self._tau_zenith_reference = tau_zenith_paranal*factor
+        # to get back to Boulder, set altiude=0.25(=2/8km)
