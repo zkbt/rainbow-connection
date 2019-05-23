@@ -1,18 +1,36 @@
+from ..imports import *
 from ..sources import Spectrum
 from colour.phenomena.rayleigh import rayleigh_optical_depth
 
 class Sky(Spectrum):
 
-    def __init__(self, source, atmosphere):
+    def __init__(self, sunset):
         '''
         Initialize this composite object, connecting a light source
         and an atmosphere together into a diffuse Sky calculator.
         '''
 
-        self.source = source
-        self.atmosphere = atmosphere
+        self.sunset = sunset
+        self.source = sunset.source
+        self.atmosphere = sunset.atmosphere
 
-    def tau_rayleigh_scatter(self, wavelength=None, zenith_angle=0*u.deg):
+    def set_zenith_angle(self, z=0*u.deg):
+        '''
+        Set the angle from zenith.
+
+        Parameters
+        ----------
+        zenith : astropy.units.quantity.Quantity
+            The angle away from zenith along which
+            the transmission of the atmosphere should
+            be calculated.
+        '''
+
+        # set the zenith angle and airmass
+        self.zenith_angle = np.minimum(z, 90*u.deg)
+        self.airmass = 1/np.cos(self.zenith_angle)
+
+    def tau_rayleigh_scatter(self, wavelength=None):
         '''
         (Crudely) estimate the optical depth for Rayleigh scattering.
 
@@ -36,8 +54,9 @@ class Sky(Spectrum):
         tau_zenith = tau_zenith_sealevel*np.exp(-self.atmosphere.altitude)
 
         # figure out the airmass along this line of sight
-        airmass = 1/np.cos(zenith_angle)
-        effective_airmass = np.minimum(self.fortney_factor(), airmass)
+        # airmass = 1/np.cos(self.zenith_angle)
+        effective_airmass = np.minimum(self.atmosphere.fortney_factor(),
+                                       self.airmass)
 
         # actual optical depth along this line of sight
         tau = tau_zenith*effective_airmass
@@ -49,26 +68,28 @@ class Sky(Spectrum):
         where different zenith angle (and altitudes integrated across) are
         illuminated with very different spectra. However, hopefully this is
         a reasonable-ish start?
+
+        It's also assuming exactly Earth-like scattering. That's
+        definitely not coolsies.
         '''
 
         return tau
 
 
-    def spectrum(self, wavelength=None, zenith_angle=0.0):
+    def spectrum(self, wavelength=None):
         '''
         Calculate intensity of the diffuse sky at a given zenith angle.
         '''
 
         # calculate the optical depth at this wavelength/angle
-        tau_scattering = self.tau_rayleigh_scatter(wavelength=wavelength,
-                                                   zenith_angle=zenith_angle)
+        tau_scattering = self.tau_rayleigh_scatter(wavelength=wavelength)
 
         # (very crudely) assume the atmosphere is all scattering
         albedo = 1.0
         # (this could instead be estimated from the actual transmission)
 
         # calculate the mean intensity field
-        mean_intensity = self.mean_intensity(wavelength)
+        mean_intensity = self.sunset.mean_intensity(wavelength)
 
         # calculate the intensity of the illuminated sky (away from the disk)
         sky_intensity = albedo*mean_intensity*(1 - np.exp(-tau_scattering))

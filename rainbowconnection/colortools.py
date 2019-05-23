@@ -93,7 +93,7 @@ def plot_rainbow(axes=None,
     axes.bar(
         x=wavelength[ok] - padding,
         height=max(flux[ok]),
-        width=1, #+ padding,
+        width=1 + padding,
         color=colours,
         align='edge')
 

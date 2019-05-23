@@ -315,7 +315,7 @@ class Spectrum:
 
 
         # make sure we're dealing with a flux
-        assert(F_disk.unit.is_equivalent, u.W/u.m**2/u.nm)
+        assert(F_disk.unit.is_equivalent(u.W/u.m**2/u.nm))
 
         # calculate the mean intensity
         solid_angle = np.pi*self.angular_size()**2
@@ -345,7 +345,7 @@ class Spectrum:
 
 
         # make sure we're dealing with a flux
-        assert(F_disk.unit.is_equivalent, u.W/u.m**2/u.nm)
+        assert(F_disk.unit.is_equivalent(u.W/u.m**2/u.nm))
 
         # calculate the mean intensity
         solid_angle = np.pi*self.angular_size()**2
@@ -358,7 +358,7 @@ class Spectrum:
     #        PLOTTING METHODS
     #
     # ===================================
-    
+
     def plot(self,  ax=None,
                     wavelength=None,
                     rainbow=True,
