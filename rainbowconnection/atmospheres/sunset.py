@@ -80,7 +80,7 @@ class Sunset(Spectrum):
 
 
 
-    def plot_disk(self, zenith_angle=88*u.deg, azimuth_angle=0*u.deg):
+    def plot_disk(self, ax=None, zenith_angle=88*u.deg, azimuth_angle=0*u.deg):
         '''
         Plot the disk of the star.
 
@@ -91,6 +91,9 @@ class Sunset(Spectrum):
         azimuth_angle : astropy.units.quantity.Quantity
             The azimuth angle along the horizon.
         '''
+
+        if ax is not None:
+            plt.sca(ax)
 
         # set the zenith angle
         self.set_zenith_angle(zenith_angle)
@@ -154,7 +157,8 @@ class Sunset(Spectrum):
                  zorder=-100,
                  color=colors)
 
-    def plot_sunset(self, zenith_angle=88*u.deg,
+    def plot_sunset(self, ax=None,
+                          zenith_angle=88*u.deg,
                           azimuth_angle=0*u.deg,
                           maxelevation=20*u.deg,
                           minelevation=-5*u.deg,
@@ -166,6 +170,8 @@ class Sunset(Spectrum):
 
         Parameters
         ----------
+        ax : matplotlib.axes._subplots.AxesSubplot
+            The axes into which this plot should be drawn.
         zenith_angle : astropy.units.quantity.Quantity
             The angle away from zenith.
         azimuth_angle : astropy.units.quantity.Quantity
@@ -191,6 +197,9 @@ class Sunset(Spectrum):
         # make sure we're using a dark background and astropy units
         with plt.style.context('dark_background'), quantity_support():
 
+            if ax is not None:
+                plt.sca(ax)
+
             # put the sun at a particular elevation
             self.set_zenith_angle(zenith_angle)
 
@@ -212,7 +221,7 @@ class Sunset(Spectrum):
         return ax
 
     def animate_sunset(self, filename='sunset.mp4',
-                             maxelevation=20*u.deg,
+                             maxelevation=30*u.deg,
                              skyresolution=0.5*u.deg,
                              skynormalization=0.7,
                              motionresolution=0.5*u.deg):
@@ -268,12 +277,106 @@ class Sunset(Spectrum):
                 for z in tqdm(zenith_angles):
 
                     # clear whatever was in the previous axes
-                    plt.cla()
+                    ax.cla()
 
                     # plot the sunset at this current stellar zenith angle
-                    self.plot_sunset(z,
+                    self.plot_sunset(ax=ax,
+                                     zenith_angle=z,
                                      maxelevation=maxelevation,
                                      minelevation=minelevation)
 
                     # grab this frame in the animation
                     wri.grab_frame()
+
+    def animate_everything(self, filename='everything-sunset.mp4',
+                                 maxelevation=90*u.deg,
+                                 skyresolution=0.5*u.deg,
+                                 skynormalization=0.7,
+                                 motionresolution=0.5*u.deg):
+
+        # get the appropriate animation writer
+        wri = get_writer(filename)
+
+        # calculate the grid of zenith angles for the star
+        min_zenith = 90*u.deg - maxelevation - self.source.angular_size()
+        minelevation = -(self.source.angular_size() + motionresolution)
+        max_zenith = 90*u.deg - minelevation
+        zenith_angles = np.arange(min_zenith.to('deg').value,
+                                  max_zenith.to('deg').value,
+                                  motionresolution.to('deg').value)*u.deg
+
+        with plt.style.context('dark_background'), quantity_support():
+
+            fi = self.plot_everything(zenith_angles[0])
+
+            # save to frames of an animation
+            with wri.saving(fi, filename, 160):
+
+                # loop over zenith angles
+                for z in tqdm(zenith_angles):
+
+                    # clear whatever was in the previous axes
+                    fi.clf()
+
+                    # plot the sunset at this current stellar zenith angle
+                    self.plot_everything(fi=fi, zenith_angle=z)
+
+                    # grab this frame in the animation
+                    wri.grab_frame()
+
+
+    def plot_everything(self, zenith_angle=85*u.deg, fi=None):
+
+        with plt.style.context('dark_background'), quantity_support():
+
+            if fi is None:
+                xpixels, ypixels = 1920, 1080
+                fi = plt.figure(figsize=(12,6.75))
+                dpi = 1920/12 # 160
+
+            # set up the basic columns
+            gs = GridSpec(  1, 3,
+                            width_ratios=[0.4, 0.2, 1],
+                            wspace=0.35)
+
+            ax = {}
+
+            # set up the contextualizing plots on the left
+            gs_geometry = GridSpecFromSubplotSpec(2, 1,
+                                                  height_ratios=[1, 2],
+                                                  subplot_spec=gs[0])
+
+            #ax['cartoon'] = plt.subplot(gs_geometry[0])
+            ax['sky-zoom'] = plt.subplot(gs_geometry[0])
+
+            # set up the main panel showing the sunset over the full sky
+            ax['sky'] = plt.subplot(gs[1])
+
+            # set up the spectrum panels
+            gs_spectra = GridSpecFromSubplotSpec(2, 1,
+                                                 height_ratios=[1, 1],
+                                                 subplot_spec=gs[2],
+                                                 hspace=0.5)
+            ax['rgb'] = plt.subplot(gs_spectra[0])
+            ax['spectrum'] = plt.subplot(gs_spectra[1],
+                                         sharex=ax['rgb'], sharey=ax['rgb'])
+
+            # actually make the plots
+            self.plot_sunset(ax=ax['sky'], zenith_angle=zenith_angle, maxelevation=90*u.deg)
+
+            self.plot_disk(ax=ax['sky-zoom'], zenith_angle=zenith_angle)
+            plt.axis('scaled')
+            plt.axis('off')
+
+            #self.plot_sunset(ax=ax['sky-zoom'], zenith_angle=zenith_angle, maxelevation=90*u.deg)
+            width = 1.1*self.source.angular_size()
+            plt.xlim(-width, width)
+            plt.ylim(90*u.deg - zenith_angle - width, 90*u.deg - zenith_angle + width)
+            ax['sky-zoom'].get_yaxis().set_visible(False)
+
+            self.plot_rgb(ax=ax['rgb'])
+            self.plot_as_rainbow(ax['spectrum'])
+            plt.ylim(0, 120)
+            plt.xlim(350*u.nm, 750*u.nm)
+
+        return fi

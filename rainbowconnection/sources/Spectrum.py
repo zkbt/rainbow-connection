@@ -493,7 +493,7 @@ class Spectrum:
             # add the axis labels
             wunit = w.unit.to_string('latex_inline')
             plt.xlabel(f'Wavelength ({wunit})')
-            plt.ylabel(f'Relative Brightness (%)')
+            plt.ylabel(f'Brightness (%)')
 
         return ax
 
@@ -501,6 +501,7 @@ class Spectrum:
                                 rainbow=True,
                                 color='auto',
                                 style='dark_background',
+                                ylim=[0, 120],
                                 **kwargs):
         '''
         A quick tool to plot a spectrum, just as RGB bars.
@@ -544,13 +545,15 @@ class Spectrum:
             f = self.spectrum(w)
             # KLUDGE?
             norm = np.max(f.value[(w > 400*u.nm) & (w < 650*u.nm)]) / 100
-            rainbow_spectrum(axes=ax, wavelength=w.to('nm').value, flux=f.value/norm)
+            rainbow_spectrum(axes=ax, wavelength=w.to('nm').value, flux=f.value/norm,
+                             rainbowtop=np.max(ylim))
+            plt.ylim(*ylim)
             plt.plot(w, f/norm, color='white')
 
             # add the axis labels
             wunit = w.unit.to_string('latex_inline')
             plt.xlabel(f'Wavelength ({wunit})')
-            plt.ylabel(f'Relative Brightness (%)')
+            plt.ylabel(f'Brightness (%)')
 
         return ax
 

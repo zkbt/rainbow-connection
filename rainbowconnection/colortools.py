@@ -105,6 +105,7 @@ def plot_rainbow(axes=None,
 def rainbow_spectrum(axes=None,
                  wavelength=None, flux=None,
                  cmfs='CIE 1931 2 Degree Standard Observer',
+                 rainbowtop=np.inf,
                  **kwargs):
     """
     (This is still *real* blarg-y*.)
@@ -140,6 +141,9 @@ def rainbow_spectrum(axes=None,
 
     w, f = wavelength[ok], flux[ok]
 
+    # clip the top of the box?
+    f = np.minimum(f, rainbowtop)
+
     XYZ = wavelength_to_XYZ(w)
 
     # create colors at theose wavelengths
@@ -173,6 +177,7 @@ def rainbow_spectrum(axes=None,
         width=dw,
         color=colours,
         clip_path=polygon,
-        align='edge')
+        align='edge',
+        clip_on=True)
 
     return axes
