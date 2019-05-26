@@ -228,7 +228,7 @@ class DiscreteAtmosphere(Atmosphere):
 
         # figure out the transmission at this altitude
         # FIXME -- this is a major kludge! do the integral!
-        effective_airmass = np.minimum(self.fortney_factor(), self.airmass)
+        effective_airmass = np.minimum(self.fortney_factor()/2.0, self.airmass)
         tau = self.tau_zenith*effective_airmass
 
         # bin this spectrum to the particular wavelength grid

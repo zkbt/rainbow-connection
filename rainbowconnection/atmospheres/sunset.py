@@ -134,6 +134,9 @@ class Sunset(Spectrum):
             the sky would always seem to be black.
         '''
 
+        if self.atmosphere.__class__.__name__== 'NoAtmosphere':
+            return
+
         # set the elevations where we will calculate sky colors
         elevations = np.arange(minelevation.to('deg').value,
                                (maxelevation + skyresolution).to('deg').value,
@@ -289,10 +292,11 @@ class Sunset(Spectrum):
                     wri.grab_frame()
 
     def animate_everything(self, filename='everything-sunset.mp4',
-                                 maxelevation=90*u.deg,
+                                 maxelevation=50*u.deg,
                                  skyresolution=0.5*u.deg,
                                  skynormalization=0.7,
-                                 motionresolution=0.5*u.deg):
+                                 motionresolution=0.5*u.deg,
+                                 ingredients=['sky', 'sky-zoom', 'rgb', 'spectrum']):
 
         # get the appropriate animation writer
         wri = get_writer(filename)
@@ -319,13 +323,15 @@ class Sunset(Spectrum):
                     fi.clf()
 
                     # plot the sunset at this current stellar zenith angle
-                    self.plot_everything(fi=fi, zenith_angle=z)
+                    self.plot_everything(fi=fi, zenith_angle=z,
+                                         ingredients=ingredients)
 
                     # grab this frame in the animation
                     wri.grab_frame()
 
 
-    def plot_everything(self, zenith_angle=85*u.deg, fi=None):
+    def plot_everything(self, zenith_angle=85*u.deg, maxelevation=50*u.deg, fi=None,
+                        ingredients=['sky', 'sky-zoom', 'rgb', 'spectrum']):
 
         with plt.style.context('dark_background'), quantity_support():
 
@@ -335,48 +341,61 @@ class Sunset(Spectrum):
                 dpi = 1920/12 # 160
 
             # set up the basic columns
-            gs = GridSpec(  1, 3,
-                            width_ratios=[0.4, 0.2, 1],
-                            wspace=0.35)
+            gs = GridSpec(  1, 4,
+                            width_ratios=[0.18, 0.4, 0.09,  0.9],
+                            wspace=0.0)
 
             ax = {}
 
             # set up the contextualizing plots on the left
             gs_geometry = GridSpecFromSubplotSpec(2, 1,
-                                                  height_ratios=[1, 2],
-                                                  subplot_spec=gs[0])
+                                                  height_ratios=[1, 1],
+                                                  hspace=0.5,
+                                                  subplot_spec=gs[1])
 
             #ax['cartoon'] = plt.subplot(gs_geometry[0])
-            ax['sky-zoom'] = plt.subplot(gs_geometry[0])
+            if 'sky-zoom' in ingredients:
+                ax['sky-zoom'] = plt.subplot(gs_geometry[0])
+                self.plot_disk(ax=ax['sky-zoom'], zenith_angle=zenith_angle)
+                width = 1.1*self.source.angular_size()
+                plt.xlim(-width, width)
+                plt.ylim(90*u.deg - zenith_angle - width, 90*u.deg - zenith_angle + width)
+                ax['sky-zoom'].get_xaxis().set_visible(False)
+                ax['sky-zoom'].get_yaxis().set_visible(False)
+                plt.axis('scaled')
+                plt.axis('off')
 
             # set up the main panel showing the sunset over the full sky
-            ax['sky'] = plt.subplot(gs[1])
+            if 'sky' in ingredients:
+                ax['sky'] = plt.subplot(gs[0])
+                # actually make the plots
+                self.plot_sunset(ax=ax['sky'], zenith_angle=zenith_angle, maxelevation=maxelevation)
 
+            #
             # set up the spectrum panels
             gs_spectra = GridSpecFromSubplotSpec(2, 1,
                                                  height_ratios=[1, 1],
-                                                 subplot_spec=gs[2],
+                                                 subplot_spec=gs[3],
                                                  hspace=0.5)
-            ax['rgb'] = plt.subplot(gs_spectra[0])
-            ax['spectrum'] = plt.subplot(gs_spectra[1],
-                                         sharex=ax['rgb'], sharey=ax['rgb'])
+            if 'rgb' in ingredients:
+                ax['rgb'] = plt.subplot(gs_spectra[0])
+                self.plot_rgb(ax=ax['rgb'])
+                plt.ylim(0, 120)
+                plt.xlim(360*u.nm, 740*u.nm)
 
-            # actually make the plots
-            self.plot_sunset(ax=ax['sky'], zenith_angle=zenith_angle, maxelevation=90*u.deg)
-
-            self.plot_disk(ax=ax['sky-zoom'], zenith_angle=zenith_angle)
-            plt.axis('scaled')
-            plt.axis('off')
-
-            #self.plot_sunset(ax=ax['sky-zoom'], zenith_angle=zenith_angle, maxelevation=90*u.deg)
-            width = 1.1*self.source.angular_size()
-            plt.xlim(-width, width)
-            plt.ylim(90*u.deg - zenith_angle - width, 90*u.deg - zenith_angle + width)
-            ax['sky-zoom'].get_yaxis().set_visible(False)
-
-            self.plot_rgb(ax=ax['rgb'])
-            self.plot_as_rainbow(ax['spectrum'])
-            plt.ylim(0, 120)
-            plt.xlim(350*u.nm, 750*u.nm)
+            if 'spectrum' in ingredients:
+                ax['spectrum'] = plt.subplot(gs_spectra[1],
+                                             sharex=ax['rgb'], sharey=ax['rgb'])
+                self.plot_as_rainbow(ax['spectrum'])
+                plt.ylim(0, 120)
+                plt.xlim(360*u.nm, 740*u.nm)
 
         return fi
+
+    def plot_rgb(self, ax=None, **kwargs):
+        Spectrum.plot_rgb(self, ax=ax, **kwargs)
+        self.source.plot_rgb(foreground=False, ax=ax)
+
+    def plot_as_rainbow(self, ax=None, **kwargs):
+        Spectrum.plot_as_rainbow(self, ax=ax, **kwargs)
+        self.source.plot_as_rainbow(foreground=False, ax=ax)

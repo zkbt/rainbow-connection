@@ -4,6 +4,9 @@ import colour
 from ..units import determine_quantity
 from ..plottingtools import setup_axes_with_rainbow
 
+
+bgkw = dict(color='gray', alpha=0.5, zorder=-100)
+
 class Spectrum:
     '''
     The Spectrum class is a generic representation of the light from
@@ -183,13 +186,20 @@ class Spectrum:
             The integral over wavelength
         '''
 
-        if lower is not None:
-            raise NotImplementedError('Wavelength limits not yet OK.')
-
         w = self.default_wavelengths
         f = self.spectrum(w)
 
-        return np.trapz(f, w)
+
+        ok = np.ones(np.shape(w)).astype(np.bool)
+        if lower is not None:
+            ok *= w >= lower
+
+        if upper is not None:
+            ok *= w <= upper
+            #raise NotImplementedError('Wavelength limits not yet OK.')
+
+
+        return np.trapz(f[ok], w[ok])
 
         #np.trapz(f.value, w.value)*f.unit*w.unit
         #wlower = lower or self.default_wavelengths[0]
@@ -432,7 +442,7 @@ class Spectrum:
     def plot_rgb(self,  ax=None,
                         wavelength=None,
                         rainbow=True,
-                        color='auto',
+                        foreground=True,
                         style='dark_background',
                         **kwargs):
         '''
@@ -483,11 +493,18 @@ class Spectrum:
 
             centers = [np.mean(c) for c in [red, green, blue]]
             widths = [c[1] - c[0] for c in [red, green, blue]]
-            colors = [np.array([1, 0, 0]),
-                      np.array([0, 1, 0]),
-                      np.array([0, 0, 1])]
 
-            plt.bar(centers, rgb*100, widths, color=colors, edgecolor='white')
+            if foreground:
+                kw = dict(color = [np.array([1, 0, 0]),
+                                   np.array([0, 1, 0]),
+                                   np.array([0, 0, 1])],
+                          edgecolor='white',
+                          zorder = 0)
+            else:
+
+                kw = dict(**bgkw)
+                kw['edgecolor'] = 'none'
+            plt.bar(centers, rgb*100, widths, linewidth=2, **kw)
 
 
             # add the axis labels
@@ -501,6 +518,7 @@ class Spectrum:
                                 rainbow=True,
                                 color='auto',
                                 style='dark_background',
+                                foreground=True,
                                 ylim=[0, 120],
                                 **kwargs):
         '''
@@ -544,11 +562,14 @@ class Spectrum:
             w = self.wavelength(np.arange(330, 760, 1)*u.nm)
             f = self.spectrum(w)
             # KLUDGE?
-            norm = np.max(f.value[(w > 400*u.nm) & (w < 650*u.nm)]) / 100
-            rainbow_spectrum(axes=ax, wavelength=w.to('nm').value, flux=f.value/norm,
-                             rainbowtop=np.max(ylim))
+            norm = np.max(f.value[(w > 400*u.nm) & (w < 685*u.nm)]) / 100
+            if foreground:
+                rainbow_spectrum(axes=ax, wavelength=w.to('nm').value, flux=f.value/norm,
+                                 rainbowtop=np.max(ylim))
+                plt.plot(w, f/norm, color='white', linewidth=2)
+            else:
+                plt.fill_between(w, f/norm, linewidth=0, **bgkw)
             plt.ylim(*ylim)
-            plt.plot(w, f/norm, color='white')
 
             # add the axis labels
             wunit = w.unit.to_string('latex_inline')

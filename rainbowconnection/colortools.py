@@ -89,9 +89,9 @@ def plot_rainbow(axes=None,
     axes.add_patch(polygon)
 
     # draw bars, with the colors at each vertical stripe
-    padding = 0.1
+    padding = 0.2
     axes.bar(
-        x=wavelength[ok] - padding,
+        x=wavelength[ok] - padding/2,
         height=max(flux[ok]),
         width=1 + padding,
         color=colours,

@@ -55,7 +55,7 @@ class Sky(Spectrum):
 
         # figure out the airmass along this line of sight
         # airmass = 1/np.cos(self.zenith_angle)
-        effective_airmass = np.minimum(self.atmosphere.fortney_factor(),
+        effective_airmass = np.minimum(self.atmosphere.fortney_factor()/2.0,
                                        self.airmass)
 
         # actual optical depth along this line of sight
