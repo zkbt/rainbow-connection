@@ -8,26 +8,34 @@ class Sky(Spectrum):
         '''
         Initialize this composite object, connecting a light source
         and an atmosphere together into a diffuse Sky calculator.
+
+        Parameters
+        ----------
+        sunset : rainbowconnection.Sunset
+            Any object with both a source and an atmosphere.
+            Calculations related to the diffuse sky brightness
+            require both, so it's simplest just to pass
+            a sunset object in which they are already linked.
         '''
 
         self.sunset = sunset
         self.source = sunset.source
         self.atmosphere = sunset.atmosphere
 
-    def set_zenith_angle(self, z=0*u.deg):
+    def set_zenith_angle(self, zenith_angle=0*u.deg):
         '''
         Set the angle from zenith.
 
         Parameters
         ----------
-        zenith : astropy.units.quantity.Quantity
+        zenith_angle : astropy.units.quantity.Quantity
             The angle away from zenith along which
             the transmission of the atmosphere should
             be calculated.
         '''
 
         # set the zenith angle and airmass
-        self.zenith_angle = np.minimum(z, 90*u.deg)
+        self.zenith_angle = np.minimum(zenith_angle, 90*u.deg)
         self.airmass = 1/np.cos(self.zenith_angle)
 
     def tau_rayleigh_scatter(self, wavelength=None):
@@ -41,6 +49,11 @@ class Sky(Spectrum):
         The goal is to provide an approximate means to estimate the
         diffuse brightness of the sky, away from the disk of
         any particular light source.
+
+        Parameters
+        ----------
+        wavelength : astropy.units.quantity.Quantity
+            The wavelengths on which we want the spectrum.
         '''
 
         # convert the wavelength to cm (without units)
@@ -79,6 +92,14 @@ class Sky(Spectrum):
     def spectrum(self, wavelength=None):
         '''
         Calculate intensity of the diffuse sky at a given zenith angle.
+        Currently this accounts only for Rayleigh scattering. For
+        properly capturing hot atmospheres, it should include thermal
+        emission too!
+
+        Parameters
+        ----------
+        wavelength : astropy.units.quantity.Quantity
+            The wavelengths on which we want the spectrum.
         '''
 
         # calculate the optical depth at this wavelength/angle

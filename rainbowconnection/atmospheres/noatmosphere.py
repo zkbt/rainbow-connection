@@ -3,6 +3,9 @@ from .atmosphere import *
 class NoAtmosphere(Atmosphere):
     '''
     A fake atmosphere that represents a completely transparent atmosphere.
+    This might be useful as a placeholder, if you want to make
+    plots/animations that directly compare the spectrum of a
+    source with or without extinction by an atmosphere.
     '''
 
     def __repr__(self):
@@ -20,13 +23,7 @@ class NoAtmosphere(Atmosphere):
 
     def __init__(self, zenith_angle=0.0*u.deg, **kwargs):
         '''
-        In inherited classes, this initialization relies on the
-        existence of a method called ".read_transmission"
-        that will create the attributes:
-            ._wavelengths (with units of wavelength)
-            ._tau_zenith_reference (unitless)
-            .H (with units of length)
-            .radius (with units of length)
+        Initialize the fake atmosphereless atmosphere.
         '''
 
         # read the transmission spectrum data

@@ -9,6 +9,13 @@ class Sunset(Spectrum):
         '''
         Initialize this composite object, connecting a light source
         and an atmosphere together into a Sunset calculator.
+
+        Parameters
+        ----------
+        source : rainbowconnection.Spectrum
+            The light source from above the atmosphere.
+        atmosphere : rainbowconnection.Atmosphere
+            The atmosphere through which the light source propagates.
         '''
 
         self.source = source
@@ -20,6 +27,7 @@ class Sunset(Spectrum):
     def radius(self):
         return self.source.radius
 
+    # KLUDGE - there's got to be a better way to organize this?!
     @property
     def distance(self):
         try:
@@ -57,6 +65,15 @@ class Sunset(Spectrum):
         wavelength : astropy.units.quantity.Quantity
             The wavelengths on which we want the spectrum.
 
+        zenith_angle : astropy.units.quantity.Quantity
+            The angle away from zenith along which
+            the transmission of the atmosphere should
+            be calculated.
+
+        altitude : float
+            The altitude at which we should be floating
+            in the atmosphere, in units of scale heights.
+
         Returns
         -------
         spectrum : astropy.units.quantity.Quantity
@@ -86,6 +103,8 @@ class Sunset(Spectrum):
 
         Parameters
         ----------
+        ax : matplotlib.axes._subplots.AxesSubplot
+            The axes into which this plot should be drawn.
         zenith_angle : astropy.units.quantity.Quantity
             The angle away from zenith.
         azimuth_angle : astropy.units.quantity.Quantity
@@ -292,11 +311,46 @@ class Sunset(Spectrum):
                     wri.grab_frame()
 
     def animate_everything(self, filename='everything-sunset.mp4',
+                                 ingredients=['sky', 'sky-zoom', 'rgb', 'spectrum'],
                                  maxelevation=50*u.deg,
                                  skyresolution=0.5*u.deg,
                                  skynormalization=0.7,
-                                 motionresolution=0.5*u.deg,
-                                 ingredients=['sky', 'sky-zoom', 'rgb', 'spectrum']):
+                                 motionresolution=0.5*u.deg):
+
+        '''
+        Make an animation that summarizes
+        lots of information about a sunset.
+
+        Parameters
+        ----------
+        filename : string
+            The filename where this animation should be saved
+        ingredients : list
+            The components to draw. These are:
+                'sky' = a slice of many elevations
+                'sky-zoom' = just the disk of the star
+                'rgb' = a plot of relative RGB colors
+                'spectrum' = a plot of the spectrum
+            Any subset of these is allowed.
+        maxelevation : astropy.units.quantity.Quantity
+            The maximum elevation above the horizon.
+        skyresolution : astropy.units.quantity.Quantity
+            The vertical extent of constant-color stripes
+            when rendering the atmosphere. Stripes larger
+            than ~1/20 the vertical extent will be very
+            noticeable.
+        skynormalization : float
+            By what factor do we down-weight the intensity
+            of the sky. To be quantitatively correct, this
+            should be something like the ratio of the
+            stellar disk intensity to the diffuse sky
+            brightness, but that factor is so tiny that
+            the sky would always seem to be black.
+        motionresolution : astropy.units.quantity.Quantity
+            The angular step the star moves between
+            frames of the animation.
+        '''
+
 
         # get the appropriate animation writer
         wri = get_writer(filename)
@@ -330,8 +384,29 @@ class Sunset(Spectrum):
                     wri.grab_frame()
 
 
-    def plot_everything(self, zenith_angle=85*u.deg, maxelevation=50*u.deg, fi=None,
-                        ingredients=['sky', 'sky-zoom', 'rgb', 'spectrum']):
+    def plot_everything(self, ingredients=['sky', 'sky-zoom', 'rgb', 'spectrum'],
+                              zenith_angle=85*u.deg,
+                              maxelevation=50*u.deg,
+                              fi=None):
+        '''
+        Make an animation that summarizes
+        lots of information about a sunset.
+
+        Parameters
+        ----------
+        ingredients : list
+            The components to draw. These are:
+                'sky' = a slice of many elevations
+                'sky-zoom' = just the disk of the star
+                'rgb' = a plot of relative RGB colors
+                'spectrum' = a plot of the spectrum
+            Any subset of these is allowed.
+        zenith_angle : astropy.units.quantity.Quantity
+            The angle away from zenith.
+        maxelevation : astropy.units.quantity.Quantity
+            The maximum elevation above the horizon
+            (for setting the plot limits.)
+        '''
 
         with plt.style.context('dark_background'), quantity_support():
 
@@ -393,9 +468,17 @@ class Sunset(Spectrum):
         return fi
 
     def plot_rgb(self, ax=None, **kwargs):
+        '''
+        Wrapper to add the unextincted spectrum
+        in dark gray in the background for context.
+        '''
         Spectrum.plot_rgb(self, ax=ax, **kwargs)
         self.source.plot_rgb(foreground=False, ax=ax)
 
     def plot_as_rainbow(self, ax=None, **kwargs):
+        '''
+        Wrapper to add the unextincted spectrum
+        in dark gray in the background for context.
+        '''
         Spectrum.plot_as_rainbow(self, ax=ax, **kwargs)
         self.source.plot_as_rainbow(foreground=False, ax=ax)

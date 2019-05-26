@@ -103,20 +103,20 @@ class Atmosphere:
         '''
         self.set_zenith_angle(90*u.deg - elevation)
 
-    def set_zenith_angle(self, z=0*u.deg):
+    def set_zenith_angle(self, zenith_angle=0*u.deg):
         '''
         Set the angle from zenith.
 
         Parameters
         ----------
-        zenith : astropy.units.quantity.Quantity
+        zenith_angle : astropy.units.quantity.Quantity
             The angle away from zenith along which
             the transmission of the atmosphere should
             be calculated.
         '''
 
         # set the zenith angle and airmass
-        self.zenith_angle = np.minimum(z, 90*u.deg)
+        self.zenith_angle = np.minimum(zenith_angle, 90*u.deg)
         self.airmass = 1/np.cos(self.zenith_angle)
 
     def set_altitude(self, altitude=0):
@@ -189,6 +189,19 @@ class DiscreteAtmosphere(Atmosphere):
         self.set_altitude(altitude)
 
     def fortney_factor(self):
+        '''
+        The ratio of optical depth between a horizontal slant path
+        through an atmosphere to a vertical path, accounting
+        for the sphericity of the planet. This is a simple approach
+        to connect exoplanet transmission spectra to vertical
+        optical depths through an atmosphere (see Fortney 2005).
+
+        Returns
+        -------
+        fortney_factor : float
+            The ratio of slant to vertical optical depths.
+        '''
+
         # calculate the fortney factor = ratio of slant/vertical optical depths
         return np.sqrt(2*np.pi*self.radius/self.H).decompose()
 
