@@ -28,9 +28,9 @@ class Earth(DiscreteAtmosphere):
 
         # define geometry of the atmosphere (how spherical?)
         mu = 29
-        T = 273*u.K
+        self.T = 273*u.K
         g = 9.8*u.m/u.s**2
-        self.H = (con.k_B*T/mu/g/con.m_p).to('km')
+        self.H = (con.k_B*self.T/mu/g/con.m_p).to('km')
         self.radius = 1*u.Rearth
 
         # the file is for Cerro Paranal at 2640m

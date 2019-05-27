@@ -331,7 +331,7 @@ class Spectrum:
         solid_angle = np.pi*self.angular_size()**2
 
         # calculate the mean intensity field
-        J = F_disk/4/np.pi
+        J = F_disk/4/np.pi/u.sr
 
         return J
 

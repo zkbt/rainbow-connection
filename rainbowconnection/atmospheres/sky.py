@@ -1,5 +1,5 @@
 from ..imports import *
-from ..sources import Spectrum
+from ..sources import Spectrum, Thermal
 from colour.phenomena.rayleigh import rayleigh_optical_depth
 
 class Sky(Spectrum):
@@ -22,9 +22,20 @@ class Sky(Spectrum):
         self.source = sunset.source
         self.atmosphere = sunset.atmosphere
 
+        try:
+            self.B = Thermal(self.atmosphere.T).intensity
+        except AttributeError:
+            def f(wavelength):
+                return np.zeros(np.shape(wavelength))*u.W/u.m**2/u.nm*u.sr
+            self.B = f
+
+        self.set_zenith_angle(0*u.deg)
+        # self.is_earth = 'Earth' in self.atmosphere.__class__.__name__
+
+
     def set_zenith_angle(self, zenith_angle=0*u.deg):
         '''
-        Set the angle from zenith.
+        Set the angle from zenith (for a slice of the sky.)
 
         Parameters
         ----------
@@ -38,17 +49,17 @@ class Sky(Spectrum):
         self.zenith_angle = np.minimum(zenith_angle, 90*u.deg)
         self.airmass = 1/np.cos(self.zenith_angle)
 
-    def tau_rayleigh_scatter(self, wavelength=None):
+
+    def spectrum(self, wavelength=None):
         '''
-        (Crudely) estimate the optical depth for Rayleigh scattering.
-
-        This scales the optical depth with the airmass and with the altitude
-        of the viewing location within the atmosphere, but it is ultimately
-        assuming an Earth-like composition.
-
-        The goal is to provide an approximate means to estimate the
-        diffuse brightness of the sky, away from the disk of
-        any particular light source.
+        Calculate intensity of the diffuse sky at a given zenith angle.
+        Currently this accounts only for Rayleigh scattering (assuming
+        perfect 1/wavelength**4) and for thermal emission (which is
+        usually negligible below about 1700K). The relative contributions
+        of scattering and aborption/emission are estimated in a very
+        cartoonish fashion from the overall extinction, and assumes
+        there is at least one wavelength in the spectrum that is
+        dominated by scattering.
 
         Parameters
         ----------
@@ -56,64 +67,38 @@ class Sky(Spectrum):
             The wavelengths on which we want the spectrum.
         '''
 
-        # convert the wavelength to cm (without units)
-        w = self.atmosphere.wavelength(wavelength)
-        w_cm = w.to('cm').value
-
-        # calculate the optical depth to Rayleigh scattering vertically, from sea level
-        tau_zenith_sealevel = rayleigh_optical_depth(w_cm)
-
-        # convert to the current altitude
-        tau_zenith = tau_zenith_sealevel*np.exp(-self.atmosphere.altitude)
 
         # figure out the airmass along this line of sight
         # airmass = 1/np.cos(self.zenith_angle)
         effective_airmass = np.minimum(self.atmosphere.fortney_factor()/2.0,
                                        self.airmass)
 
-        # actual optical depth along this line of sight
-        tau = tau_zenith*effective_airmass
 
+        # calculate the optical depths at this angle
+        tau_scatter = self.atmosphere.tau_zenith_scatter*effective_airmass
+        tau_absorb = self.atmosphere.tau_zenith_absorb*effective_airmass
 
-        '''
-        An implicit assumption in this modeling is that the mean intensity
-        field is constant everywhere. That's blatantly not true at sunset,
-        where different zenith angle (and altitudes integrated across) are
-        illuminated with very different spectra. However, hopefully this is
-        a reasonable-ish start?
-
-        It's also assuming exactly Earth-like scattering. That's
-        definitely not coolsies.
-        '''
-
-        return tau
-
-
-    def spectrum(self, wavelength=None):
-        '''
-        Calculate intensity of the diffuse sky at a given zenith angle.
-        Currently this accounts only for Rayleigh scattering. For
-        properly capturing hot atmospheres, it should include thermal
-        emission too!
-
-        Parameters
-        ----------
-        wavelength : astropy.units.quantity.Quantity
-            The wavelengths on which we want the spectrum.
-        '''
-
-        # calculate the optical depth at this wavelength/angle
-        tau_scattering = self.tau_rayleigh_scatter(wavelength=wavelength)
-
-        # (very crudely) assume the atmosphere is all scattering
-        albedo = 1.0
-        # (this could instead be estimated from the actual transmission)
+        # estimate the single
+        albedo = tau_scatter/(tau_absorb + tau_scatter)
 
         # calculate the mean intensity field
-        mean_intensity = self.sunset.mean_intensity(wavelength)
+        mean_intensity = self.sunset.mean_intensity()
 
         # calculate the intensity of the illuminated sky (away from the disk)
-        sky_intensity = albedo*mean_intensity*(1 - np.exp(-tau_scattering))
+        thermal_intensity = (1 - albedo)*self.B(self.atmosphere.default_wavelengths)*(1 - np.exp(-tau_absorb))
+        scattering_intensity = albedo * mean_intensity*(1 - np.exp(-tau_scatter))
+        sky_intensity = thermal_intensity + scattering_intensity
+
+        # bin this intensity onto the desired wavelengths
+        w = self.wavelength(wavelength)
+        unit = sky_intensity.unit
+        neww, newi = bintogrid(self.atmosphere.default_wavelengths, sky_intensity.value,
+                         newx=w.to('nm').value,
+                         drop_nans=False)
+
+        # make sure the wavelengths match up
+        assert(np.all(neww == w.to('nm').value))
+
 
         # return this sky intensity
-        return sky_intensity
+        return newi*unit

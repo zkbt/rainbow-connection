@@ -143,6 +143,9 @@ class Atmosphere:
         self.altitude = altitude
         self.tau_zenith = self._tau_zenith_reference*np.exp(-altitude)
 
+        # guess what is scattering vs. extinction
+        self.guess_scattering()
+
     def transmit(self, spectrum):
         '''
         Calculate the spectrum of light that results from
@@ -187,6 +190,52 @@ class DiscreteAtmosphere(Atmosphere):
 
         # set the altitude at which we're hovering
         self.set_altitude(altitude)
+
+
+    def guess_scattering(self, visualize=False):
+        '''
+        Make a guess at the Rayleigh scattering component of
+        the atmospheric extinction, for use in estimating
+        the sky color.
+
+        This should be called once per every new altitude.
+        '''
+
+        # figure out the appropriate normalization
+        self._rayleigh_normalization = np.min(self.tau_zenith*self.default_wavelengths**4)
+
+        w = self.default_wavelengths
+        self.tau_zenith_scatter = self._rayleigh_normalization/w**4
+        self.tau_zenith_absorb =  self.tau_zenith - self.tau_zenith_scatter
+
+        if visualize:
+
+            plt.plot(w, self.tau_zenith, zorder=100, label='total')
+            plt.plot(w, self.tau_zenith_scatter, alpha=0.5, label='scattering')
+            plt.plot(w, self.tau_zenith_absorb, alpha=0.5, label='absorbtion')
+            plt.legend()
+            plt.xscale('log')
+            plt.yscale('log')
+            plt.xlabel('Wavelength ({})'.format(w.unit.to_string('latex_inline')))
+            plt.ylabel(r'$\tau_{zenith}$')
+
+    """
+    def tau_zenith_scatter(self):
+        '''
+        Estimate the optical depth to *absorption*.
+        (at the default wavelengths of the grid)
+        '''
+        w = self.default_wavelengths
+        return self._rayleigh_normalization/w**4
+
+    def tau_zenith_absorb(self):
+        '''
+        Estimate the optical depth to *absorption*.
+        (at the default wavelengths of the grid)
+        '''
+        # calculate the extinction from absorption
+        return self.tau_zenith - self.tau_zenith_scatter()
+    """
 
     def fortney_factor(self):
         '''
