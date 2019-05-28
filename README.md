@@ -1,6 +1,9 @@
 # rainbow-connection
 A suite of pedagogical tools for talking about light and color in an astronomical context.
 
+## Documentation
+For detailed usage, please read the documentation [here](https://zkbt.github.io/rainbow-connection/).
+
 ## Example Usage
 One of the goals of this package is to provide an easy interface to estimate the color of sunsets on various planets, both within and beyond the Solar System. Here's a simple example showing how to simulate a sunset on Earth:
 ```
