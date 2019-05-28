@@ -323,7 +323,8 @@ class Sunset(Spectrum):
                                  maxelevation=50*u.deg,
                                  skyresolution=0.5*u.deg,
                                  skynormalization=0.7,
-                                 motionresolution=0.5*u.deg):
+                                 motionresolution=0.5*u.deg,
+                                 **kwargs):
 
         '''
         Make an animation that summarizes
@@ -357,6 +358,9 @@ class Sunset(Spectrum):
         motionresolution : astropy.units.quantity.Quantity
             The angular step the star moves between
             frames of the animation.
+        **kwargs : dict
+            All extra keyword arguments will be passed to
+            plot_everything.
         '''
 
 
@@ -373,10 +377,10 @@ class Sunset(Spectrum):
 
         with plt.style.context('dark_background'), quantity_support():
 
-            fi = self.plot_everything(zenith_angles[0])
+            fi = self.plot_everything(zenith_angles[0], **kwargs)
 
             # save to frames of an animation
-            with wri.saving(fi, filename, 160):
+            with wri.saving(fi, filename, fi.get_dpi()):
 
                 # loop over zenith angles
                 for z in tqdm(zenith_angles):
@@ -386,7 +390,7 @@ class Sunset(Spectrum):
 
                     # plot the sunset at this current stellar zenith angle
                     self.plot_everything(fi=fi, zenith_angle=z,
-                                         ingredients=ingredients)
+                                         ingredients=ingredients, **kwargs)
 
                     # grab this frame in the animation
                     wri.grab_frame()
@@ -395,7 +399,11 @@ class Sunset(Spectrum):
     def plot_everything(self, ingredients=['sky', 'sky-zoom', 'rgb', 'spectrum'],
                               zenith_angle=85*u.deg,
                               maxelevation=50*u.deg,
-                              fi=None):
+                              fi=None,
+                              pixels=[1920, 1080],
+                              width=8,
+                              filename=None,
+                              ):
         '''
         Make an animation that summarizes
         lots of information about a sunset.
@@ -414,18 +422,23 @@ class Sunset(Spectrum):
         maxelevation : astropy.units.quantity.Quantity
             The maximum elevation above the horizon
             (for setting the plot limits.)
+        aspect : list
+            The aspect ratio [width, height] of the
+            size of the plot.
         '''
 
         with plt.style.context('dark_background'), quantity_support():
-
+            xpixels, ypixels = pixels
+            dpi = xpixels/width
+            scale = 12/width
             if fi is None:
-                xpixels, ypixels = 1920, 1080
-                fi = plt.figure(figsize=(12,6.75))
-                dpi = 1920/12 # 160
+
+                fi = plt.figure(figsize=(width, ypixels*width/xpixels),
+                                dpi=dpi)
 
             # set up the basic columns
             gs = GridSpec(  1, 4,
-                            width_ratios=[0.18, 0.4, 0.09,  0.9],
+                            width_ratios=[0.18, 0.4, 0.09*scale,  0.9],
                             wspace=0.0)
 
             ax = {}
@@ -433,7 +446,7 @@ class Sunset(Spectrum):
             # set up the contextualizing plots on the left
             gs_geometry = GridSpecFromSubplotSpec(2, 1,
                                                   height_ratios=[1, 1],
-                                                  hspace=0.5,
+                                                  hspace=0.5*scale,
                                                   subplot_spec=gs[1])
 
             #ax['cartoon'] = plt.subplot(gs_geometry[0])
@@ -459,7 +472,7 @@ class Sunset(Spectrum):
             gs_spectra = GridSpecFromSubplotSpec(2, 1,
                                                  height_ratios=[1, 1],
                                                  subplot_spec=gs[3],
-                                                 hspace=0.5)
+                                                 hspace=0.5*scale)
             if 'rgb' in ingredients:
                 ax['rgb'] = plt.subplot(gs_spectra[0])
                 self.plot_rgb(ax=ax['rgb'])
@@ -473,6 +486,8 @@ class Sunset(Spectrum):
                 plt.ylim(0, 120)
                 plt.xlim(360*u.nm, 740*u.nm)
 
+        if filename is not None:
+            plt.savefig(filename, facecolor='black')
         return fi
 
     def plot_rgb(self, ax=None, **kwargs):

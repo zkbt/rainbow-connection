@@ -504,7 +504,7 @@ class Spectrum:
 
                 kw = dict(**bgkw)
                 kw['edgecolor'] = 'none'
-            plt.bar(centers, rgb*100, widths, linewidth=2, **kw)
+            plt.bar(centers, rgb*100, widths, **kw) # linewidth=2,
 
 
             # add the axis labels
@@ -566,7 +566,7 @@ class Spectrum:
             if foreground:
                 rainbow_spectrum(axes=ax, wavelength=w.to('nm').value, flux=f.value/norm,
                                  rainbowtop=np.max(ylim))
-                plt.plot(w, f/norm, color='white', linewidth=2)
+                plt.plot(w, f/norm, color='white') #, linewidth=2
             else:
                 plt.fill_between(w, f/norm, linewidth=0, **bgkw)
             plt.ylim(*ylim)

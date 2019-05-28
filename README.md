@@ -40,6 +40,9 @@ pip install -e .
 ```
 This will link the installed version of the `rainbowconnection` package to your local repository. Changes you make to the code in the repository should be reflected in the version Python sees when it tries to `import rainbowconnection`.
 
+## Acknowledgements
+These tools were originally developed to create visualizations for a TEDx Boulder talk by [Zach Berta-Thompson](https://tedxboulder.com/speakers/zachory-berta-thompson). Much of the inspiration for creating this toolkit comes out of an effort to reproduce Frederic Pont's [simulation of sunset on HD 209458b](http://www.exeter.ac.uk/news/featurednews/title_174814_en.html).
+
 ## Contributors
 
 This package was written by [Zach Berta-Thompson](https://github.com/zkbt).
