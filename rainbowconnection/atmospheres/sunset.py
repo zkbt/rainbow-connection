@@ -42,7 +42,7 @@ class Sunset(Spectrum):
 
         s = repr(self.source)
         t = repr(self.atmosphere)
-        return f'<{s} through {t}>'
+        return f'{s}\n through\n{t}'
 
     def set_zenith_angle(self, *args, **kwargs):
         '''
@@ -97,7 +97,7 @@ class Sunset(Spectrum):
 
 
 
-    def plot_disk(self, ax=None, zenith_angle=88*u.deg, azimuth_angle=0*u.deg):
+    def plot_disk(self, ax=None, zenith_angle=89*u.deg, azimuth_angle=0*u.deg):
         '''
         Plot the disk of the star.
 
@@ -111,20 +111,28 @@ class Sunset(Spectrum):
             The azimuth angle along the horizon.
         '''
 
-        if ax is not None:
-            plt.sca(ax)
+        with plt.style.context('dark_background'), quantity_support():
 
-        # set the zenith angle
-        self.set_zenith_angle(zenith_angle)
+            if ax is not None:
+                plt.sca(ax)
 
-        # figure out the color of the star
-        rgb = self.to_color()
+            # set the zenith angle
+            self.set_zenith_angle(zenith_angle)
 
-        c = plt.Circle(xy=[azimuth_angle, 90*u.deg - zenith_angle],
-                       radius=self.source.angular_size(),
-                       facecolor=rgb, zorder=1000)
-        plt.gca().add_patch(c)
-        return c
+            # figure out the color of the star
+            rgb = self.to_color()
+
+            c = plt.Circle(xy=[azimuth_angle, 90*u.deg - zenith_angle],
+                           radius=self.source.angular_size(),
+                           facecolor=rgb, zorder=1000)
+            plt.gca().add_patch(c)
+
+            size = self.source.angular_size()*1.1
+            plt.xlim(azimuth_angle - size, azimuth_angle + size)
+            plt.ylim(90*u.deg - zenith_angle - size,
+                     90*u.deg - zenith_angle + size)
+            plt.axis('scaled')
+            return c
 
     def plot_sky(self, maxelevation=20*u.deg,
                        minelevation=0*u.deg,
@@ -180,7 +188,7 @@ class Sunset(Spectrum):
                  color=colors)
 
     def plot_sunset(self, ax=None,
-                          zenith_angle=88*u.deg,
+                          zenith_angle=89*u.deg,
                           azimuth_angle=0*u.deg,
                           maxelevation=20*u.deg,
                           minelevation=-5*u.deg,
@@ -472,7 +480,7 @@ class Sunset(Spectrum):
         Wrapper to add the unextincted spectrum
         in dark gray in the background for context.
         '''
-        Spectrum.plot_rgb(self, ax=ax, **kwargs)
+        ax = Spectrum.plot_rgb(self, ax=ax, **kwargs)
         self.source.plot_rgb(foreground=False, ax=ax)
 
     def plot_as_rainbow(self, ax=None, **kwargs):
@@ -480,5 +488,5 @@ class Sunset(Spectrum):
         Wrapper to add the unextincted spectrum
         in dark gray in the background for context.
         '''
-        Spectrum.plot_as_rainbow(self, ax=ax, **kwargs)
+        ax = Spectrum.plot_as_rainbow(self, ax=ax, **kwargs)
         self.source.plot_as_rainbow(foreground=False, ax=ax)

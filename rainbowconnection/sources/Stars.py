@@ -31,3 +31,31 @@ class Sun(Thermal):
         # convert back to the surface flux from the Sun
         factor = ((1*u.au)**2/(1*u.Rsun)**2).decompose()
         return factor*newf*u.W/u.nm/u.m**2
+
+    def integrate(self, lower=None, upper=None):
+        '''
+        Integrate the spectrum over wavelength.
+
+        It gives a number with units identical to the results of
+        `.spectrum()` but without the wavelength (W or W/m**2).
+
+        Parameters
+        ----------
+        lower : astropy.units.quantity.Quantity
+            The lower wavelength limit.
+
+        upper : astropy.units.quantity.Quantity
+            The lower wavelength limit.
+
+        Returns
+        -------
+        integral : astropy.units.quantity.Quantity
+            The integral over wavelength.
+        '''
+
+        # if wavelength limits are used, revert back to the numerical integral
+        if (lower is not None) or (upper is not None):
+            return super().integrate(lower=lower, upper=upper)
+
+        # if there are infinite wavelength limits, use bolometric
+        return 1*u.Lsun/self.normalization()
