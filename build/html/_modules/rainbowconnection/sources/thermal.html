@@ -1,0 +1,199 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>rainbowconnection.sources.thermal &#8212; rainbow-connection 0.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for rainbowconnection.sources.thermal</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">.spectrum</span> <span class="k">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="Thermal"><a class="viewcode-back" href="../../../api.html#rainbowconnection.sources.Thermal">[docs]</a><span class="k">class</span> <span class="nc">Thermal</span><span class="p">(</span><span class="n">Spectrum</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">teff</span><span class="o">=</span><span class="mi">5800</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">K</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">1</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">Rsun</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">teff</span> <span class="o">=</span> <span class="n">teff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">radius</span> <span class="o">=</span> <span class="n">radius</span>
+
+<div class="viewcode-block" id="Thermal.intensity"><a class="viewcode-back" href="../../../api.html#rainbowconnection.sources.Thermal.intensity">[docs]</a>    <span class="k">def</span> <span class="nf">intensity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This function calculates the thermal emission intensity spectrum of a surface.</span>
+
+<span class="sd">            Inputs:</span>
+<span class="sd">                wavelength = numpy array of wavelengths (with astropy units)</span>
+
+<span class="sd">            Outputs:</span>
+<span class="sd">                Returns an array of thermal emission intensities,</span>
+<span class="sd">                in astropy units of W/(m^2*micron*sr). This is a flux, which has</span>
+<span class="sd">                already been integrated over solid angle.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">temperature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">teff</span>
+
+        <span class="c1"># define variables as shortcut to the constants we need</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">h</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">k_B</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">c</span>
+
+        <span class="c1"># this is the thing that goes into the exponent (it&#39;s units better cancel!)</span>
+        <span class="n">up</span> <span class="o">=</span> <span class="n">h</span><span class="o">*</span><span class="n">c</span><span class="o">/</span><span class="p">(</span><span class="n">wavelength</span><span class="o">*</span><span class="n">k</span><span class="o">*</span><span class="n">temperature</span><span class="p">)</span>
+
+        <span class="c1"># calculate the intensity from the Planck function</span>
+        <span class="n">intensity</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">h</span><span class="o">*</span><span class="n">c</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">wavelength</span><span class="o">**</span><span class="mi">5</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">up</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">/</span><span class="n">u</span><span class="o">.</span><span class="n">steradian</span>
+
+        <span class="c1"># return the intensity</span>
+        <span class="k">return</span> <span class="n">intensity</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;W/(m**2*nm*sr)&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Thermal.surface_flux"><a class="viewcode-back" href="../../../api.html#rainbowconnection.sources.Thermal.surface_flux">[docs]</a>    <span class="k">def</span> <span class="nf">surface_flux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wavelength</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This function calculates the thermal emission flux spectrum of a surface.</span>
+
+<span class="sd">            Inputs:</span>
+<span class="sd">                wavelength = numpy array of wavelengths (with astropy units)</span>
+<span class="sd">                temperature = a single number, the temperature (with astropy units)</span>
+
+<span class="sd">            Outputs:</span>
+<span class="sd">                Returns an array of thermal emission fluxes,</span>
+<span class="sd">                in astropy units of W/(m^2*micron). This is a flux, which has</span>
+<span class="sd">                already been integrated over solid angle.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># calculate the flux, knowing the angle integral will be pi steradians (for isotropic emission)</span>
+        <span class="n">flux</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">intensity</span><span class="p">(</span><span class="n">wavelength</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">steradian</span>
+
+        <span class="c1"># return the flux, in convenient units</span>
+        <span class="k">return</span> <span class="n">flux</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;W/(nm * m**2)&#39;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        How should this object appear as a string?</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        s : str</span>
+<span class="sd">            A simple string representation.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">basic</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.__class__.__name__}</span><span class="s1"> (</span><span class="si">{self.teff:.0f}</span><span class="s1">, </span><span class="si">{self.radius}</span><span class="s1">)&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">assert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">basic</span> <span class="o">+</span> <span class="n">f</span><span class="s1">&#39; at </span><span class="si">{self.distance}</span><span class="s1">&#39;</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AssertionError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">basic</span>
+
+<div class="viewcode-block" id="Thermal.integrate"><a class="viewcode-back" href="../../../api.html#rainbowconnection.sources.Thermal.integrate">[docs]</a>    <span class="k">def</span> <span class="nf">integrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Integrate the spectrum over wavelength.</span>
+
+<span class="sd">        It gives a number with units identical to the results of</span>
+<span class="sd">        `.spectrum()` but without the wavelength (W or W/m**2).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        lower : astropy.units.quantity.Quantity</span>
+<span class="sd">            The lower wavelength limit.</span>
+
+<span class="sd">        upper : astropy.units.quantity.Quantity</span>
+<span class="sd">            The lower wavelength limit.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        integral : astropy.units.quantity.Quantity</span>
+<span class="sd">            The integral over wavelength.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="c1"># if wavelength limits are used, revert back to the numerical integral</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">lower</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">upper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="n">upper</span><span class="p">)</span>
+
+        <span class="c1"># if there are infinite wavelength limits, do the integral analytically</span>
+        <span class="n">surface_flux</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">sigma_sb</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">teff</span><span class="o">**</span><span class="mi">4</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surface_area</span><span class="p">()</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">normalization</span><span class="p">())</span><span class="o">.</span><span class="n">decompose</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">factor</span><span class="o">*</span><span class="n">surface_flux</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h3><a href="../../../index.html">Table Of Contents</a></h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../light-sources.html">Light Sources</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../atmospheres.html">Atmospheres</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../sunsets.html">Sunsets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Zach Berta-Thompson.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

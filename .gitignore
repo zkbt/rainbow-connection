@@ -1,5 +1,4 @@
 #
-*.ipynb
 *.mp4
 *.png
 *.pdf
@@ -17,7 +16,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
+build/doctrees
 develop-eggs/
 dist/
 downloads/
