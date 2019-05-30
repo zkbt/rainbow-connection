@@ -57,9 +57,9 @@ setup(
     # this package will only be installed if the current version doesn't exist
     version = __version__,
     # what's a short description of the package?
-    description = "A suite of pedagogical tools for talking about light and color in an astronomical context.",
+    description = "Pedagogical tools for light and color in astronomy.",
     # what's a more detailed description?
-    long_description = open('README.md').read(),
+    long_description = "For detailed usage, please read the documentation at https://zkbt.github.io/rainbow-connection/.",
     # who's the main author?
     author = "Zach Berta-Thompson",
     # what's the main author's email?
