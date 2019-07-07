@@ -94,7 +94,31 @@ class Sunset(Spectrum):
         # return the transmitted spectrum
         return s*t
 
+    def transit_depth(self, wavelength=None):
+        '''
+        The transit depth of the planet, passing in front of the light source.
 
+        Parameters
+        ----------
+        wavelength : astropy.units.quantity.Quantity
+            The wavelengths on which we want the spectrum.
+
+        Returns
+        -------
+        transitdepth : np.ndarry
+            The fraction of starlight blocked, unitless.
+        '''
+
+        # the transmission wavelength sets the grid
+        w = self.atmosphere.wavelength(wavelength)
+
+        # get the transmission a
+        rp = self.atmosphere.transit_radius(wavelength=w)
+
+        # get the original spectrum
+        rs = self.source.radius
+
+        return (rp/rs).decompose()**2
 
 
     def plot_disk(self, ax=None, zenith_angle=89*u.deg, azimuth_angle=0*u.deg):

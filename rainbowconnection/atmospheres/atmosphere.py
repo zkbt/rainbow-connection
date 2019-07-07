@@ -254,6 +254,42 @@ class DiscreteAtmosphere(Atmosphere):
         # calculate the fortney factor = ratio of slant/vertical optical depths
         return np.sqrt(2*np.pi*self.radius/self.H).decompose()
 
+    def transit_radius(self, wavelength=None):
+        '''
+        Calculate the effective transit radius of the planet's atmosphere,
+        as seen from infinitely far away.
+
+        Parameters
+        ----------
+        wavelength : astropy.units.quantity.Quantity
+            The wavelengths on which we want the transit radius.
+
+        Returns
+        -------
+        transit_radius : astropy.units.quantity.Quantity
+            The projected radius of the planet, with units.
+        '''
+        # make sure at least some grid of wavelengths is defined
+        w = self.wavelength(wavelength)
+
+        # figure out the slant optical depth at the reference radius
+        effective_airmass = self.fortney_factor()
+        tau = self._tau_zenith_reference*effective_airmass
+
+        # bin this spectrum to the particular wavelength grid
+        # KLUDGE -- this should really be in transmission space!
+        neww, tau_slant = bintogrid(self._wavelength.to('nm').value, tau,
+                               newx=w.to('nm').value,
+                               drop_nans=False)
+
+        # make sure the wavelengths match up
+        assert(np.all(neww == w.to('nm').value))
+
+        # convert back to tau
+        z_over_H = np.log(tau_slant)
+
+        return self.radius + self.H*z_over_H
+
     def transmission(self, wavelength=None, zenith_angle=None, altitude=None):
         '''
         Calculate the transmission through the atmosphere.
@@ -295,7 +331,7 @@ class DiscreteAtmosphere(Atmosphere):
 
         # bin this spectrum to the particular wavelength grid
         # FIXME: binning choice gets real scary with transmission
-        neww, newt = bintogrid(self._wavelength, np.exp(-tau),
+        neww, newt = bintogrid(self._wavelength.to('nm').value, np.exp(-tau),
                          newx=w.to('nm').value,
                          drop_nans=False)
 
