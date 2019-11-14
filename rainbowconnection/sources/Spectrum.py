@@ -374,6 +374,7 @@ class Spectrum:
                     rainbow=True,
                     color='auto',
                     style='dark_background',
+                    figsize=(5, 2.5),
                     **kwargs):
         '''
         A quick tool to plot a spectrum.
@@ -410,7 +411,7 @@ class Spectrum:
         with plt.style.context(style), quantity_support():
 
             # setup the basic axes
-            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow)
+            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
             w = self.wavelength(wavelength)
@@ -444,6 +445,7 @@ class Spectrum:
                         rainbow=True,
                         foreground=True,
                         style='dark_background',
+                        figsize=(5, 2.5),
                         **kwargs):
         '''
         A quick tool to plot a spectrum, just as RGB bars.
@@ -480,7 +482,7 @@ class Spectrum:
         with plt.style.context(style), quantity_support():
 
             # setup the basic axes
-            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow)
+            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
             w = self.wavelength(wavelength)
@@ -520,6 +522,7 @@ class Spectrum:
                                 style='dark_background',
                                 foreground=True,
                                 ylim=[0, 120],
+                                figsize=(5,2.5),
                                 **kwargs):
         '''
         A quick tool to plot a spectrum, just as RGB bars.
@@ -556,7 +559,7 @@ class Spectrum:
         with plt.style.context(style), quantity_support():
 
             # setup the basic axes
-            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow)
+            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
             w = self.wavelength(np.arange(330, 760, 1)*u.nm)

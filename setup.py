@@ -85,10 +85,10 @@ setup(
     install_requires=['numpy',
                       'scipy',
                       'ipython',
-                      'matplotlib',
+                      'matplotlib>=3.0',
                       'jupyter',
-                      'astropy',
-                      'colour-science',
+                      'astropy>=3.2',
+                      'colour-science==0.3.12',
                       'tqdm'],
 
     # the packages in `key` will be installed if folks run `pip install henrietta[key]`

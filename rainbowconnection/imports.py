@@ -7,7 +7,7 @@ import astropy.units as u
 import astropy.constants as con
 from astropy.visualization import quantity_support
 
-from craftroom.resample import bintogrid
+from .resampletools import bintogrid
 
 from tqdm import tqdm
 

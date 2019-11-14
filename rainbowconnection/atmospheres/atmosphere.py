@@ -35,6 +35,7 @@ class Atmosphere:
                     rainbow=True,
                     color=None,
                     style='dark_background',
+                    figsize=(5.0, 2.5),
                     **kwargs):
         '''
         A quick tool to plot the transmission through the atmosphere.
@@ -71,7 +72,7 @@ class Atmosphere:
         with plt.style.context(style), quantity_support():
 
             # setup the basic axes
-            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow)
+            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
             w = self.wavelength(wavelength)
