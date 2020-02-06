@@ -64,8 +64,8 @@ def plot_rainbow(axes=None,
     # create colors at theose wavelengths
     colours = XYZ_to_plotting_colourspace(
         wavelength_to_XYZ(wavelength[ok], cmfs),
-        ILLUMINANTS['CIE 1931 2 Degree Standard Observer']['E'],
-        apply_encoding_cctf=False)
+        ILLUMINANTS['CIE 1931 2 Degree Standard Observer']['E'])
+        #apply_encoding_cctf=False)
 
     # normalize the colors to their maximum?
     colours = COLOUR_STYLE_CONSTANTS.colour.colourspace.encoding_cctf(
