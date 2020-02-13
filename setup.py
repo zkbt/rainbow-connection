@@ -54,7 +54,7 @@ exec(open('rainbowconnection/version.py').read())
 setup(
     # the name folks can use to search for this with pip
     name = "rainbow-connection",
-    # this package will only be installed if the current version doesn't exist
+    # what version of the code is this?
     version = __version__,
     # what's a short description of the package?
     description = "Pedagogical tools for light and color in astronomy.",
@@ -68,30 +68,29 @@ setup(
     url = "https://github.com/zkbt/rainbow-connection",
     # this figures out what subdirectories to include
     packages = find_packages(),
-    # are the directories of data that should be accessible when installed?
+    # are there data that should be accessible when installed?
     include_package_data=True,
-    # where are those data directories?
-    package_data = {'rainbowconnection':['data/*.txt']},
-    # any scripts will be copied into your $PATH, so that can run from the command line
+    # are there scripts to be copied into your $PATH?
     scripts = [],
-    # some descriptions about this package (for searchability?)
+    # some descriptions about this package (for searchability)
     classifiers=[
       'Intended Audience :: Education',
       'Intended Audience :: Science/Research',
       'Programming Language :: Python',
       'Topic :: Scientific/Engineering :: Astronomy'
       ],
-    # what other packages are required. these must be pip-installable
+    # what other packages are needed? (must be pip-installable)
     install_requires=['numpy',
                       'scipy',
                       'ipython',
                       'matplotlib>=3.0',
                       'jupyter',
-                      'astropy>=3.2',
-                      'colour-science==0.3.12',
+                      'astropy>=4.0',
+                      'colour-science>=0.3.12',
                       'tqdm'],
-
-    # the packages in `key` will be installed if folks run `pip install henrietta[key]`
+    # what version of Python is required?
+    python_requires='>=3.6',
+    # requirements in `key` will install with `pip install rainbow-connection[key]`
     extras_require={},
     # (I think just leave this set to False)
     zip_safe=False,

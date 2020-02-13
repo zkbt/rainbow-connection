@@ -3,12 +3,9 @@ import matplotlib.pyplot as plt
 import astropy.units as u
 from directory import *
 
-plt.ion()
-
 def test_earth():
     a = rc.Earth()
     a.plot()
-
     save('earth-atmosphere.pdf')
 
 
@@ -25,6 +22,6 @@ def test_transmission():
     save('sun-through-earth-atmosphere.pdf')
 
 if __name__ == '__main__':
-    test_earth()
-    test_hotjupiter()
-    test_transmission()
+    outputs = {k.split('_')[-1]:v()
+               for k, v in locals().items()
+               if 'test_' in k}

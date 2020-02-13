@@ -4,55 +4,91 @@ import colour
 from ..units import determine_quantity
 from ..plottingtools import setup_axes_with_rainbow
 
+def check_wavelength_unit(w):
+    w.to('micron')
 
 bgkw = dict(color='gray', alpha=0.5, zorder=-100)
 
 class Spectrum:
     '''
-    The Spectrum class is a generic representation of the light from
-    some emitting object, particularly for spherically symmetric emission.
+    The Spectrum class is a generic representation of the light
+    from some emitting object, particularly for spherically
+    symmetric emission.
 
-    By default, the `.spectrum(wavelength)` method will return the
-    spectral luminosity of the object. This is a quantity with units
-    like W/nm, and it can be integrated over wavelength to provide
-    the total luminosity of the light-emitting object, in W.
+    By default, the `.spectrum(wavelength)` method will return
+    the spectral luminosity of the object. This is a quantity
+    with units like W/nm, and it can be integrated over
+    wavelength to provide the total luminosity of the
+    light-emitting object, in W.
 
-    The `.at(distance)` method creates an object representing the spectral
-    flux from the object if seen from some particular distance. This is
-    a quantity with units like W/nm/m**2, and it can be integrated over
-    wavelength to provide the total flux of the light, in W/m**2.
+    The `.at(distance)` method creates an object representing
+    the spectral flux from the object if seen from some
+    particular distance. This is a quantity with units like
+    W/nm/m**2, and it can be integrated over wavelength to
+    provide the total flux of the light, in W/m**2.
 
-    Classes that inherit from this will likely modify (at least) the
-    surface_flux and surface_area methods.
+    Classes that inherit from this will likely modify (at least)
+    the surface_flux and surface_area methods.
     '''
 
     # the default grid of wavelengths
     default_wavelengths = np.arange(200, 1000)*u.nm
 
-    def surface_flux(self, wavelength=None):
+    def __init__(self, wavelength, flux, radius=1/4/np.pi*u.m):
         '''
-        The surface flux of the light source,
-        in units like W/nm/m**2.
-
-        (This should likely by overwritten by inheriting classes.)
+        Initialize a spectrum by providing arrays of
+        wavelength and flux. (Normally, some other
+        wrapper will be used to create a new Spectrum
+        object.)
 
         Parameters
         ----------
         wavelength : astropy.units.quantity.Quantity
-            The wavelengths on which we want the flux.
+            The wavelength values of the spectrum.
+            These must be convertible to units of
+            length (nm, m, cm, micron, Angstrom, ...)
 
-        Returns
-        -------
-        surface_flux : astropy.units.quantity.Quantity
-            The flux from the surface, usually in W/nm/m**2.
+        flux : astropy.units.quantity.Quantity
+            The flux values of the spectrum. Units
+            should be fairly flexible, but W/m**2/nm
+            would be pretty reasonable defaults.
         '''
 
-        # make sure a wavelength grid is defined
+        # make sure the wavelengths have some
+        check_wavelength_unit(wavelength)
+
+        # assign the hiddgen wavelength and flux values
+        self._wavelength = wavelength
+        self._flux = flux*u.Unit('')
+        self.radius = radius*u.Unit('')
+
+        # set the default wavelengths to be the actual values
+        self.default_wavelengths = self._wavelength
+
+    def surface_flux(self, wavelength=None):
+
+        # make sure at least some grid of wavelengths is defined
         w = self.wavelength(wavelength)
 
-        # make a boring spectrum
-        shape = np.shape(w)
-        return np.ones(shape)*u.W/u.nm/u.m**2
+        original_unit = self._flux.unit
+        unitless_flux = self._flux.value
+
+        # bin this spectrum to the particular wavelength grid
+        unitless_neww, unitless_newf = bintogrid(
+            x=self._wavelength.to('nm').value,
+            y=unitless_flux,
+            newx=w.to('nm').value,
+            drop_nans=False)
+
+        # make sure the wavelengths match up
+        assert(np.all(unitless_neww == w.to('nm').value))
+
+        # make sure the flux units match up
+        newf = unitless_newf*original_unit
+        assert(newf.unit.is_equivalent(self._flux.unit))
+
+        return newf
+
 
     def surface_area(self):
         '''

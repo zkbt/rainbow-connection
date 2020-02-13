@@ -1,0 +1,2 @@
+# include data files inside the package directory structure
+recursive-include rainbowconnection *.txt *.csv *.dat
