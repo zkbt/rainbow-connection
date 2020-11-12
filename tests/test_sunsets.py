@@ -7,14 +7,14 @@ def test_sunset():
     s = rc.Sun().at(1*u.au)
     e = rc.Earth()
     t = e.transmit(s)
-    t.animate_sunset(d('earth-sun-quick.mp4'), motionresolution=10*u.deg)
+    t.animate_sunset(d('earth-sun-quick.mp4'), motionresolution=15*u.deg)
     return t
 
 def test_everything():
     s = rc.Sun().at(1*u.au)
     e = rc.Earth()
     t = e.transmit(s)
-    t.animate_everything(d('earth-sun-everything-quick.mp4'), motionresolution=10*u.deg)
+    t.animate_everything(d('earth-sun-everything-quick.mp4'), motionresolution=15*u.deg)
     return t
 
 if __name__ == '__main__':
