@@ -86,7 +86,7 @@ setup(
                       'matplotlib>=3.0',
                       'jupyter',
                       'astropy>=4.0',
-                      'colour-science>=0.3.12',
+                      'colour-science>=0.3.15',
                       'tqdm'],
     # what version of Python is required?
     python_requires='>=3.6',
