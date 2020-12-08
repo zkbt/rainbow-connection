@@ -171,25 +171,50 @@ def get_downloaded_models():
                                for d in available_metallicity_directories}
 
     availability_by_metallicity = {}
-    print(available_metallicities)
-    for metallicity in available_metallicities:
-        Z = stringify_metallicity(metallicity)
-        this_metallicity = os.path.join(base_directory,
-                                        directory_template,
-                                        flexible_file_template).format(metallicity=stringify_metallicity(metallicity))
 
-        # for now, just interpolate in temperature
-        Teffs, loggs = [], []
-        for t in np.sort(glob.glob(this_metallicity)):
-            x = (t.split('/lte')[-1].split('-')[0:2])
-            Teffs.append(np.float(x[0]))
-            loggs.append(np.float(x[1].split('+')[0]))
-        Teffs = np.array(Teffs)
-        loggs = np.array(loggs)
+    if len(available_metallicities) == 0:
+        print('''
+        It is totally fine to proceed using `rainbow-connection` as is, without
+        downloading any addition files. However, if you want to have access
+        access to stellar spectra of arbitrary temperatures, you will need
+        to download some PHOENIX model spectra to your computer. It appears
+        that no spectra have yet been downloaded.
+
+        To download a set of model spectra for a particular metallicity, run
+        ```
+        from rainbowconnection.sources.phoenix import unzip_metallicity
+        unzip_metallicity(Z=0.0)
+        ```
+        replacing the `Z=` argument with whatever (log-solar) metallicity
+        you want to download. Available options are in increments of 0.5 dex.
+
+        This will download a very large file for each metallicty, so it may
+        take a fairly long time. Please be patient. It will download and
+        unzip these files into a (hidden) directory called `.rainbow-connection`
+        in your $HOME directory.
+        ''')
+    else:
+        print('The following PHOENIX stellar spectra have been downloaded\n'
+        'and are available to use via `Star()` source objects:\n')
+        for metallicity in available_metallicities:
+            Z = stringify_metallicity(metallicity)
+            this_metallicity = os.path.join(base_directory,
+                                            directory_template,
+                                            flexible_file_template).format(metallicity=stringify_metallicity(metallicity))
+
+            # for now, just interpolate in temperature
+            Teffs, loggs = [], []
+            for t in np.sort(glob.glob(this_metallicity)):
+                x = (t.split('/lte')[-1].split('-')[0:2])
+                Teffs.append(np.float(x[0]))
+                loggs.append(np.float(x[1].split('+')[0]))
+            Teffs = np.array(Teffs)
+            loggs = np.array(loggs)
 
 
-        availability_by_metallicity[metallicity] = Teffs, loggs
-        print('[Fe/H] = {} has {} spectra'.format(metallicity, len(Teffs)))
+            availability_by_metallicity[metallicity] = Teffs, loggs
+            print(f'Metallicity [Fe/H] = {metallicity} has {len(Teffs)} spectra, stored in...')
+            print(f' {this_metallicity}')
 
     return availability_by_metallicity
 
