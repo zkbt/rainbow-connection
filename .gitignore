@@ -3,6 +3,7 @@
 *.mp4
 *.png
 *.pdf
+.DS_Store
 
 source-material
 

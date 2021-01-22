@@ -1,12 +1,17 @@
 from .atmosphere import *
 
-class Exoplanet(DiscreteAtmosphere):
 
-    def __init__(self, wavelength, planet_radius, H=20*u.km,
-                       altitude=0.0,
-                       zenith_angle=0.0*u.deg,
-                       **kwargs):
-        '''
+class Exoplanet(DiscreteAtmosphere):
+    def __init__(
+        self,
+        wavelength,
+        planet_radius,
+        H=20 * u.km,
+        altitude=0.0,
+        zenith_angle=0.0 * u.deg,
+        **kwargs
+    ):
+        """
         Initialize a generic exoplanet atmosphere from a model exoplanet
         transmission spectrum, specified by the inputs `wavelength`
         and `planet_radius`
@@ -30,11 +35,10 @@ class Exoplanet(DiscreteAtmosphere):
             The default angle from zenith along which transmission
             should be calculated (this can be changed).
 
-        '''
-
+        """
 
         # define the wavelength grid
-        self._wavelength = wavelength.to('nm')
+        self._wavelength = wavelength.to("nm")
 
         # store the effective transit radius
         self._transit_radius = planet_radius
@@ -47,10 +51,13 @@ class Exoplanet(DiscreteAtmosphere):
         self.radius = reference_radius
 
         # calculate the optical depth at zenith
-        z_over_H = ((self._transit_radius - reference_radius)/self.H).decompose()
+        z_over_H = (
+            (self._transit_radius - reference_radius) / self.H
+        ).decompose()
         tau_slant = np.exp(z_over_H)
-        self._tau_zenith_reference = (tau_slant/self.fortney_factor()).decompose()
-
+        self._tau_zenith_reference = (
+            tau_slant / self.fortney_factor()
+        ).decompose()
 
         # define the default wavelength grid to use
         self.default_wavelengths = self._wavelength
