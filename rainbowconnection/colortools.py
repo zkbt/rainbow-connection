@@ -52,8 +52,8 @@ CMFs = first_item(
 )
 
 
-def plot_rainbow(
-    axes=None,
+def plot_simple_rainbow(
+    ax=None,
     wavelength=None,
     flux=None,
     cmfs="CIE 1931 2 Degree Standard Observer",
@@ -76,8 +76,8 @@ def plot_rainbow(
         The ax into which the rainbow was drawn.
     """
 
-    if axes is None:
-        axes = plt.gca()
+    if ax is None:
+        ax = plt.gca()
 
     # pull out the CMFss
     cmfs = first_item(filter_cmfs(cmfs).values())
@@ -123,11 +123,11 @@ def plot_rainbow(
         facecolor="none",
         edgecolor="none",
     )
-    axes.add_patch(polygon)
+    ax.add_patch(polygon)
 
     # draw bars, with the colors at each vertical stripe
     padding = 0.2
-    axes.bar(
+    ax.bar(
         x=wavelength[ok] - padding / 2,
         height=max(flux[ok]),
         width=1 + padding,
@@ -135,14 +135,11 @@ def plot_rainbow(
         align="edge",
     )
 
-    # plot the actual spectrum?
-    # axes.plot(wavelength, values, color=CONSTANTS_COLOUR_STYLE.colour.dark)
-
-    return axes
+    return ax
 
 
-def rainbow_spectrum(
-    axes=None,
+def plot_with_rainbow_fill(
+    ax=None,
     wavelength=None,
     flux=None,
     cmfs="CIE 1931 2 Degree Standard Observer",
@@ -166,8 +163,8 @@ def rainbow_spectrum(
         The ax into which the rainbow was drawn.
     """
 
-    if axes is None:
-        axes = plt.gca()
+    if ax is None:
+        ax = plt.gca()
 
     if wavelength is None:
         # create a grid of wavelengths (at which CMFss are useful)
@@ -212,12 +209,12 @@ def rainbow_spectrum(
         facecolor="none",
         edgecolor="none",
     )
-    axes.add_patch(polygon)
+    ax.add_patch(polygon)
 
     # draw bars, with the colors at each vertical stripe
     padding = 0.0
     dw = np.mean(np.diff(w))
-    axes.bar(
+    ax.bar(
         x=w,
         height=f,
         width=dw,
@@ -227,4 +224,89 @@ def rainbow_spectrum(
         clip_on=True,
     )
 
-    return axes
+    return ax
+
+def plot_as_slit_spectrum(
+    ax=None,
+    wavelength=None,
+    flux=None,
+    cmfs="CIE 1931 2 Degree Standard Observer",
+    **kwargs
+):
+    """
+    (This is still *real* blarg-y*.)
+    Plot a spectrum as a light source would be seen through
+    a slit spectrometer, with vertical bands of light that
+    are brighter or fainter depending on the intensity
+    of the spectrum at that particular wavelength.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes._subplots.AxesSubplot
+        The ax into which the rainbow should be drawn.
+
+    wavelength : array
+        The wavelengths to include in the spectrum.
+        In units of nm, but not as astropy units.
+
+    flux : array
+        The fluxes to include in the spectrum.
+        In units of whatever, but not as astropy units.
+
+    cmfs : string
+        The color matching function(s?) to use.
+
+    Returns
+    -------
+    ax : matplotlib.axes._subplots.AxesSubplot
+        The ax into which the rainbow was drawn.
+    """
+
+    # make sure our plotting ax is defined
+    if ax is None:
+        ax = plt.gca()
+
+    # make sure we have a grid of wavelengths defined
+    if wavelength is None:
+        # create a grid of wavelengths (at which CMFss are useful)
+        wavelength = CMFs.wavelengths
+
+    # create y values that will be plotted (these could be spectrum)
+    if flux is None:
+        flux = np.ones_like(wavelength)
+
+    # pull out only the values that *can* be converted to colors
+    ok = (wavelength >= np.min(CMFs.wavelengths)) & (
+        wavelength <= np.max(CMFs.wavelengths)
+    )
+    w, f = wavelength[ok], flux[ok]
+
+    # get the XYZ for the wavelengths
+    XYZ = wavelength_to_XYZ(w)
+
+    # create colors at those wavelengths
+    colours = XYZ_to_plotting_colourspace(XYZ)
+
+    # normalize the colors to their maximum?
+    # colours = CONSTANTS_COLOUR_STYLE.colour.colourspace.cctf_encoding(
+    #    normalise_maximum(colours))
+
+    # normalize the brightness by the flux
+    colours *= f[:, np.newaxis]
+
+    # normalize to the brightest line
+    colours = np.maximum(0, colours / np.max(colours))
+
+    # draw bars, with the colors at each vertical stripe
+    padding = 0.0
+    dw = np.mean(np.diff(w))
+    ax.bar(
+        x=w,
+        width=dw,
+        height=1,
+        color=colours,
+        align="edge",
+        clip_on=True,
+    )
+
+    return ax

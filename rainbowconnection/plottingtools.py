@@ -1,5 +1,5 @@
 from .imports import *
-from .colortools import plot_rainbow
+from .colortools import plot_simple_rainbow
 
 
 def setup_axes_with_rainbow(
@@ -18,7 +18,7 @@ def setup_axes_with_rainbow(
             # plot a cartoon rainbow, in a box above
             ax_rainbow = plt.subplot(gs[0])
             plt.sca(ax_rainbow)
-            plot_rainbow(axes=ax_rainbow)
+            plot_simple_rainbow(ax=ax_rainbow)
 
             ax_rainbow.get_yaxis().set_visible(False)
             ax_rainbow.get_xaxis().set_visible(False)

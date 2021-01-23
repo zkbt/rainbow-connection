@@ -345,12 +345,12 @@ def read_phoenix(
         Teffs, loggs = availability_by_metallicity[metallicity]
         # figure out the closest gravity
         best_gravity = find_nearest(loggs, logg)
-        if best_gravity != logg:
+        '''if best_gravity != logg:
             print(
                 "nudged logg from {} to {}".format(
                     logg, best_gravity
                 )
-            )
+            )'''
 
         Teffs = Teffs[loggs == best_gravity]
         close_temperatures = find_two_nearest(
