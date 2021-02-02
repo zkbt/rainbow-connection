@@ -23,18 +23,14 @@ base_url = "http://phoenix.astro.physik.uni-goettingen.de/data/"
 online_library_directory = "MedResFITS/R10000FITS/"
 
 # FIXME -- make the local storage directory more flexible?
-base_directory = os.path.join(
-    os.getenv("HOME"), ".rainbow-connection"
-)
-directory_template = (
-    "PHOENIX-ACES-AGSS-COND-2011_R10000FITS_Z{metallicity}"
-)
+base_directory = os.path.join(os.getenv("HOME"), ".rainbow-connection")
+directory_template = "PHOENIX-ACES-AGSS-COND-2011_R10000FITS_Z{metallicity}"
 
 # define a more flexible template string to catch all files
-file_template = "lte{Teff:05.0f}-{logg:04.2f}{metallicity}.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits"
-flexible_file_template = (
-    "lte*-*{metallicity}.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits"
+file_template = (
+    "lte{Teff:05.0f}-{logg:04.2f}{metallicity}.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits"
 )
+flexible_file_template = "lte*-*{metallicity}.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits"
 
 
 def get_metallicity_directory(Z=0.0):
@@ -46,9 +42,7 @@ def get_metallicity_directory(Z=0.0):
     Z : float
         [Fe/H]-style metallicity (= 0.0 for solar)
     """
-    return directory_template.format(
-        metallicity=stringify_metallicity(Z)
-    )
+    return directory_template.format(metallicity=stringify_metallicity(Z))
 
 
 def get_metallicity_url(Z=0.0):
@@ -87,9 +81,7 @@ def download_metallicity(Z=0.0):
     or downloading it for the first time.
     """
     )
-    filename = download_file(
-        url, cache=True, show_progress=True, pkgname=package_name
-    )
+    filename = download_file(url, cache=True, show_progress=True, pkgname=package_name)
 
     return filename
 
@@ -116,9 +108,7 @@ def unzip_metallicity(Z=0.0):
     i_base = local_path_to_zip_file.find("cache/download")
     assert i_base > 0
     local_base_directory = local_path_to_zip_file[:i_base]
-    local_directory = os.path.join(
-        local_base_directory, get_metallicity_directory(Z)
-    )
+    local_directory = os.path.join(local_base_directory, get_metallicity_directory(Z))
 
     # check if unzipped files already exist
     pattern = os.path.join(local_directory, "*.fits")
@@ -154,9 +144,7 @@ def unzip_metallicity(Z=0.0):
         It may take a while...
         """
         )
-        with zipfile.ZipFile(
-            local_path_to_zip_file, "r"
-        ) as zip_ref:
+        with zipfile.ZipFile(local_path_to_zip_file, "r") as zip_ref:
             zip_ref.extractall(local_directory)
 
     return local_directory
@@ -239,9 +227,7 @@ def get_downloaded_models():
                 base_directory,
                 directory_template,
                 flexible_file_template,
-            ).format(
-                metallicity=stringify_metallicity(metallicity)
-            )
+            ).format(metallicity=stringify_metallicity(metallicity))
 
             # for now, just interpolate in temperature
             Teffs, loggs = [], []
@@ -267,9 +253,7 @@ def get_downloaded_models():
 availability_by_metallicity = get_downloaded_models()
 
 
-def read_exact_phoenix(
-    Teff=5800, logg=4.5, metallicity=0.0, photons=True, R=None
-):
+def read_exact_phoenix(Teff=5800, logg=4.5, metallicity=0.0, photons=True, R=None):
 
     key = (Teff, logg, metallicity, photons, R)
 
@@ -292,13 +276,7 @@ def read_exact_phoenix(
         h = hdus[0].header
 
         # wavelength units are nm
-        wave = (
-            np.exp(
-                h["CRVAL1"]
-                + h["CDELT1"] * np.arange(h["NAXIS1"])
-            )
-            / 10
-        )
+        wave = np.exp(h["CRVAL1"] + h["CDELT1"] * np.arange(h["NAXIS1"])) / 10
 
         """
         # include kludge to extend to wavelengths beyond 2500nm
@@ -328,9 +306,7 @@ def read_exact_phoenix(
     return wave, flux
 
 
-def read_phoenix(
-    Teff=5800, logg=4.5, metallicity=0.0, photons=True, R=None
-):
+def read_phoenix(Teff=5800, logg=4.5, metallicity=0.0, photons=True, R=None):
     try:
         w, f = read_exact_phoenix(
             Teff=Teff,
@@ -345,17 +321,15 @@ def read_phoenix(
         Teffs, loggs = availability_by_metallicity[metallicity]
         # figure out the closest gravity
         best_gravity = find_nearest(loggs, logg)
-        '''if best_gravity != logg:
+        """if best_gravity != logg:
             print(
                 "nudged logg from {} to {}".format(
                     logg, best_gravity
                 )
-            )'''
+            )"""
 
         Teffs = Teffs[loggs == best_gravity]
-        close_temperatures = find_two_nearest(
-            Teffs, Teff, verbose=False
-        )
+        close_temperatures = find_two_nearest(Teffs, Teff, verbose=False)
         weights = interpolation_weights(close_temperatures, Teff)
 
         w_one, f_one = read_exact_phoenix(
@@ -375,9 +349,6 @@ def read_phoenix(
         assert (w_one == w_other).all()
         w = w_one
         # do logarithmic interpolation
-        f = np.exp(
-            weights[0] * np.log(f_one)
-            + weights[1] * np.log(f_other)
-        )
+        f = np.exp(weights[0] * np.log(f_one) + weights[1] * np.log(f_other))
 
     return w, f

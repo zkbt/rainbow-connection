@@ -76,9 +76,7 @@ class Atmosphere:
         with plt.style.context(style), quantity_support():
 
             # setup the basic axes
-            ax = setup_axes_with_rainbow(
-                ax=ax, rainbow=rainbow, figsize=figsize
-            )
+            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
             w = self.wavelength(wavelength)
@@ -86,9 +84,7 @@ class Atmosphere:
             # pull out the spectrum
             t = self.transmission(w)
 
-            plt.plot(
-                w, t * 100, color=color, label=self, **kwargs
-            )
+            plt.plot(w, t * 100, color=color, label=self, **kwargs)
 
             # add the axis labels
             wunit = w.unit.to_string("latex_inline")
@@ -150,9 +146,7 @@ class Atmosphere:
             on gas-dominated planets.
         """
         self.altitude = altitude
-        self.tau_zenith = self._tau_zenith_reference * np.exp(
-            -altitude
-        )
+        self.tau_zenith = self._tau_zenith_reference * np.exp(-altitude)
 
         # guess what is scattering vs. extinction
         self.guess_scattering()
@@ -182,9 +176,7 @@ class DiscreteAtmosphere(Atmosphere):
     into this category.
     """
 
-    def __init__(
-        self, zenith_angle=0.0 * u.deg, altitude=0.0, **kwargs
-    ):
+    def __init__(self, zenith_angle=0.0 * u.deg, altitude=0.0, **kwargs):
         """
         In inherited classes, this initialization relies on the
         existence of a method called ".read_transmission"
@@ -220,18 +212,12 @@ class DiscreteAtmosphere(Atmosphere):
         )
 
         w = self.default_wavelengths
-        self.tau_zenith_scatter = (
-            self._rayleigh_normalization / w ** 4
-        )
-        self.tau_zenith_absorb = (
-            self.tau_zenith - self.tau_zenith_scatter
-        )
+        self.tau_zenith_scatter = self._rayleigh_normalization / w ** 4
+        self.tau_zenith_absorb = self.tau_zenith - self.tau_zenith_scatter
 
         if visualize:
 
-            plt.plot(
-                w, self.tau_zenith, zorder=100, label="total"
-            )
+            plt.plot(w, self.tau_zenith, zorder=100, label="total")
             plt.plot(
                 w,
                 self.tau_zenith_scatter,
@@ -247,11 +233,7 @@ class DiscreteAtmosphere(Atmosphere):
             plt.legend()
             plt.xscale("log")
             plt.yscale("log")
-            plt.xlabel(
-                "Wavelength ({})".format(
-                    w.unit.to_string("latex_inline")
-                )
-            )
+            plt.xlabel("Wavelength ({})".format(w.unit.to_string("latex_inline")))
             plt.ylabel(r"$\tau_{zenith}$")
 
     """
@@ -287,9 +269,7 @@ class DiscreteAtmosphere(Atmosphere):
         """
 
         # calculate the fortney factor = ratio of slant/vertical optical depths
-        return np.sqrt(
-            2 * np.pi * self.radius / self.H
-        ).decompose()
+        return np.sqrt(2 * np.pi * self.radius / self.H).decompose()
 
     def transit_radius(self, wavelength=None):
         """
@@ -330,9 +310,7 @@ class DiscreteAtmosphere(Atmosphere):
 
         return self.radius + self.H * z_over_H
 
-    def transmission(
-        self, wavelength=None, zenith_angle=None, altitude=None
-    ):
+    def transmission(self, wavelength=None, zenith_angle=None, altitude=None):
         """
         Calculate the transmission through the atmosphere.
 
@@ -368,9 +346,7 @@ class DiscreteAtmosphere(Atmosphere):
 
         # figure out the transmission at this altitude
         # FIXME -- this is a major kludge! do the integral!
-        effective_airmass = np.minimum(
-            self.fortney_factor() / 2.0, self.airmass
-        )
+        effective_airmass = np.minimum(self.fortney_factor() / 2.0, self.airmass)
         tau = self.tau_zenith * effective_airmass
 
         # bin this spectrum to the particular wavelength grid

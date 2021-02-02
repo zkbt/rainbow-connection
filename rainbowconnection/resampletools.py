@@ -99,9 +99,7 @@ def fluxconservingresample(
     yout = np.diff(cdfout)
 
     if visualize:
-        fi, (ax_cdf, ax_pdf) = plt.subplots(
-            2, 1, sharex=True, figsize=(9, 6)
-        )
+        fi, (ax_cdf, ax_pdf) = plt.subplots(2, 1, sharex=True, figsize=(9, 6))
         inkw = dict(
             color="black",
             alpha=1,
@@ -130,12 +128,7 @@ def fluxconservingresample(
         plt.ylabel("Flux per (Original) Pixel")
         plt.xlabel("Pixel")
         # plot the original pixels (in df/dpixel to compare with resampled)
-        plotboxy(
-            xin,
-            yin / xinbinsize,
-            label="Original Pixels",
-            **inkw
-        )
+        plotboxy(xin, yin / xinbinsize, label="Original Pixels", **inkw)
 
         # what would a bad interpolation look like?
         badinterpolation = scipy.interpolate.interp1d(
@@ -159,10 +152,7 @@ def fluxconservingresample(
 
         # plot the flux-conserving resampled data (again, in df/d"pixel")
         plt.plot(
-            xout,
-            yout / xoutbinsize,
-            label="Flux-Conserving Interpolation",
-            **outkw
+            xout, yout / xoutbinsize, label="Flux-Conserving Interpolation", **outkw
         )
         plt.legend(**legkw)
 
@@ -171,17 +161,10 @@ def fluxconservingresample(
         plt.ylabel("Cumulative Flux (from left)")
 
         # plot the original CDF
-        plt.plot(
-            xinforcdf, cdfin, label="Original Pixels", **inkw
-        )
+        plt.plot(xinforcdf, cdfin, label="Original Pixels", **inkw)
 
         # plot the interpolated CDF
-        plt.plot(
-            xoutcdf,
-            cdfout,
-            label="Flux-Conserved Resample",
-            **outkw
-        )
+        plt.plot(xoutcdf, cdfout, label="Flux-Conserved Resample", **outkw)
         # plt.legend(**legkw)
         if demo:
             a = raw_input(
@@ -238,12 +221,8 @@ def bintogrid(
         else:
             if weighting == "inversevariance":
                 weights = 1 / unc ** 2
-        numerator = fluxconservingresample(
-            x, y * weights, newx, visualize=False
-        )
-        denominator = fluxconservingresample(
-            x, weights, newx, visualize=False
-        )
+        numerator = fluxconservingresample(x, y * weights, newx, visualize=False)
+        denominator = fluxconservingresample(x, weights, newx, visualize=False)
 
         # the binned weighted means on the new grid
         newy = numerator / denominator
@@ -262,9 +241,7 @@ def bintogrid(
         return newx[ok], newy[ok], newunc[ok]
 
 
-def bintoR(
-    x, y, unc=None, R=50, xlim=None, weighting="inversevariance"
-):
+def bintoR(x, y, unc=None, R=50, xlim=None, weighting="inversevariance"):
     """
     x = the independent variable (wavelength)
     y = the measurement (transit depth)
@@ -298,14 +275,10 @@ def bintoR(
     # now do the binning on a uniform grid of lnx
 
     if unc is None:
-        blnx, by = bintogrid(
-            lnx, y, unc, newx=newlnx, weighting=weighting
-        )
+        blnx, by = bintogrid(lnx, y, unc, newx=newlnx, weighting=weighting)
         return np.exp(blnx), by
     else:
-        blnx, by, bunc = bintogrid(
-            lnx, y, unc, newx=newlnx, weighting=weighting
-        )
+        blnx, by, bunc = bintogrid(lnx, y, unc, newx=newlnx, weighting=weighting)
         return np.exp(blnx), by, bunc
 
 

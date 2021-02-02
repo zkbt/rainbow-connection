@@ -23,15 +23,11 @@ def get_writer(filename, fps=30, **kw):
         try:
             writer = ani.writers["ffmpeg"](fps=fps, **kw)
         except (RuntimeError, KeyError):
-            raise RuntimeError(
-                "This computer seems unable to ffmpeg."
-            )
+            raise RuntimeError("This computer seems unable to ffmpeg.")
     else:
         try:
             writer = ani.writers["pillow"](fps=fps, **kw)
         except (RuntimeError, KeyError):
             writer = ani.writers["imagemagick"](fps=fps, **kw)
-            raise RuntimeError(
-                "This computer seem unable to animate?"
-            )
+            raise RuntimeError("This computer seem unable to animate?")
     return writer

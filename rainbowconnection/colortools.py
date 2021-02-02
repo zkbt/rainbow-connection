@@ -47,9 +47,7 @@ from colour.utilities import (
 from colour import SpectralDistribution
 
 # define a standard set of color-matching functions
-CMFs = first_item(
-    filter_cmfs("CIE 1931 2 Degree Standard Observer").values()
-)
+CMFs = first_item(filter_cmfs("CIE 1931 2 Degree Standard Observer").values())
 
 
 def plot_simple_rainbow(
@@ -93,16 +91,12 @@ def plot_simple_rainbow(
     # create colors at theose wavelengths
     colours = XYZ_to_plotting_colourspace(
         wavelength_to_XYZ(wavelength[ok], cmfs),
-        CCS_ILLUMINANTS["CIE 1931 2 Degree Standard Observer"][
-            "E"
-        ],
+        CCS_ILLUMINANTS["CIE 1931 2 Degree Standard Observer"]["E"],
     )
 
     # normalize the colors to their maximum?
-    colours = (
-        CONSTANTS_COLOUR_STYLE.colour.colourspace.cctf_encoding(
-            normalise_maximum(colours)
-        )
+    colours = CONSTANTS_COLOUR_STYLE.colour.colourspace.cctf_encoding(
+        normalise_maximum(colours)
     )
 
     # create y values that will be plotted (these could be spectrum)
@@ -226,7 +220,8 @@ def plot_with_rainbow_fill(
 
     return ax
 
-def plot_as_slit_spectrum(
+
+def plot_as_slit_rainbow(
     ax=None,
     wavelength=None,
     flux=None,
@@ -255,6 +250,9 @@ def plot_as_slit_spectrum(
 
     cmfs : string
         The color matching function(s?) to use.
+
+    vector : bool
+
 
     Returns
     -------
@@ -297,16 +295,12 @@ def plot_as_slit_spectrum(
     # normalize to the brightest line
     colours = np.maximum(0, colours / np.max(colours))
 
-    # draw bars, with the colors at each vertical stripe
-    padding = 0.0
-    dw = np.mean(np.diff(w))
-    ax.bar(
-        x=w,
-        width=dw,
-        height=1,
-        color=colours,
-        align="edge",
-        clip_on=True,
+    # draw as an RGB color image with imshow
+    ax.imshow(
+        colours[np.newaxis, :, :],
+        aspect="auto",
+        extent=[np.min(w), np.max(w), 0, 1],
+        interpolation="nearest",
     )
 
     return ax

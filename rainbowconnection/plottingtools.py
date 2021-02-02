@@ -2,18 +2,14 @@ from .imports import *
 from .colortools import plot_simple_rainbow
 
 
-def setup_axes_with_rainbow(
-    ax=None, rainbow=True, figsize=(5, 2.5)
-):
+def setup_axes_with_rainbow(ax=None, rainbow=True, figsize=(5, 2.5)):
     # create new ax(s), unless we're supposed to over plot on one
     if ax is None:
         plt.figure(figsize=figsize)
         # decide whether to add a horizontal rainbow cartoon
         if rainbow:
             # create a two-part grid
-            gs = GridSpec(
-                2, 1, height_ratios=[0.05, 1], hspace=0.0
-            )
+            gs = GridSpec(2, 1, height_ratios=[0.05, 1], hspace=0.0)
 
             # plot a cartoon rainbow, in a box above
             ax_rainbow = plt.subplot(gs[0])

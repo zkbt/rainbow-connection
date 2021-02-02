@@ -32,9 +32,7 @@ class NoAtmosphere(Atmosphere):
         # set the zenith angle (or fall back to the current setting)
         self.set_zenith_angle(zenith_angle)
 
-    def transmission(
-        self, wavelength=None, zenith_angle=None, **kw
-    ):
+    def transmission(self, wavelength=None, zenith_angle=None, **kw):
         """
         Calculate the transmission through the atmosphere.
 

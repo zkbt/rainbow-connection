@@ -2,7 +2,7 @@ from ..imports import *
 from ..colortools import (
     plot_simple_rainbow,
     plot_with_rainbow_fill,
-    plot_as_slit_spectrum,
+    plot_as_slit_rainbow,
     CMFs,
     SpectralDistribution,
     ColourRuntimeWarning,
@@ -44,9 +44,7 @@ class Spectrum:
     # the default grid of wavelengths
     default_wavelengths = np.arange(200, 1000) * u.nm
 
-    def __init__(
-        self, wavelength, flux, radius=1 / 4 / np.pi * u.m
-    ):
+    def __init__(self, wavelength, flux, radius=1 / 4 / np.pi * u.m):
         """
         Initialize a spectrum by providing arrays of
         wavelength and flux. (Normally, some other
@@ -143,9 +141,7 @@ class Spectrum:
         """
 
         # simplify the factor as best we can
-        factor = (
-            self.surface_area() / self.normalization()
-        ).decompose()
+        factor = (self.surface_area() / self.normalization()).decompose()
 
         # return the surface flux with appropriate normalization
         return factor * self.surface_flux(wavelength)
@@ -177,9 +173,7 @@ class Spectrum:
         try:
             # if there's a distance, return an angular size
             assert self.distance is not None
-            return np.arctan(self.radius / self.distance).to(
-                "deg"
-            )
+            return np.arctan(self.radius / self.distance).to("deg")
         except (AttributeError, AssertionError):
             # complain if no distance is defined
             raise ValueError(
@@ -280,9 +274,7 @@ class Spectrum:
         f = self.spectrum(w)
 
         # create the spectral distribution
-        sd = SpectralDistribution(
-            dict(zip(w.value, f.value / np.max(f.value)))
-        )
+        sd = SpectralDistribution(dict(zip(w.value, f.value / np.max(f.value))))
 
         # return it
         return sd
@@ -299,9 +291,7 @@ class Spectrum:
         """
 
         with warnings.catch_warnings():
-            warnings.simplefilter(
-                action="ignore", category=ColourRuntimeWarning
-            )
+            warnings.simplefilter(action="ignore", category=ColourRuntimeWarning)
 
             # create a colour SpectralDistribution
             sd = self.to_sd()
@@ -338,9 +328,7 @@ class Spectrum:
         """
         try:
             assert self.distance is not None
-            return (
-                f"{self.__class__.__name__} at {self.distance}"
-            )
+            return f"{self.__class__.__name__} at {self.distance}"
         except (AssertionError, AttributeError):
             return f"{self.__class__.__name__}"
 
@@ -470,9 +458,7 @@ class Spectrum:
         with plt.style.context(style), quantity_support():
 
             # setup the basic axes
-            ax = setup_axes_with_rainbow(
-                ax=ax, rainbow=rainbow, figsize=figsize
-            )
+            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
             w = self.wavelength(wavelength)
@@ -547,9 +533,7 @@ class Spectrum:
         with plt.style.context(style), quantity_support():
 
             # setup the basic axes
-            ax = setup_axes_with_rainbow(
-                ax=ax, rainbow=rainbow, figsize=figsize
-            )
+            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
             w = self.wavelength(wavelength)
@@ -577,9 +561,7 @@ class Spectrum:
 
                 kw = dict(**bgkw)
                 kw["edgecolor"] = "none"
-            plt.bar(
-                centers, rgb * 100, widths, **kw
-            )  # linewidth=2,
+            plt.bar(centers, rgb * 100, widths, **kw)  # linewidth=2,
 
             # add the axis labels
             wunit = w.unit.to_string("latex_inline")
@@ -640,20 +622,13 @@ class Spectrum:
         with plt.style.context(style), quantity_support():
 
             # setup the basic axes
-            ax = setup_axes_with_rainbow(
-                ax=ax, rainbow=rainbow, figsize=figsize
-            )
+            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
             w = self.wavelength(np.arange(330, 760, 1) * u.nm)
             f = self.spectrum(w)
             # KLUDGE?
-            norm = (
-                np.max(
-                    f.value[(w > 400 * u.nm) & (w < 685 * u.nm)]
-                )
-                / 100
-            )
+            norm = np.max(f.value[(w > 400 * u.nm) & (w < 685 * u.nm)]) / 100
             if foreground:
                 plot_with_rainbow_fill(
                     ax=ax,
@@ -661,13 +636,9 @@ class Spectrum:
                     flux=f.value / norm,
                     rainbowtop=np.max(ylim),
                 )
-                plt.plot(
-                    w, f / norm, color="white"
-                )  # , linewidth=2
+                plt.plot(w, f / norm, color="white")  # , linewidth=2
             else:
-                plt.fill_between(
-                    w, f / norm, linewidth=0, **bgkw
-                )
+                plt.fill_between(w, f / norm, linewidth=0, **bgkw)
             plt.ylim(*ylim)
 
             # add the axis labels
@@ -677,14 +648,14 @@ class Spectrum:
 
         return ax
 
-    def plot_as_slit_spectrum(
+    def plot_as_slit_rainbow(
         self,
         ax=None,
         rainbow=True,
         style="dark_background",
         figsize=(5, 2.5),
-        xlim = [360*u.nm, 760*u.nm],
-        dw = 1*u.nm,
+        xlim=[360 * u.nm, 760 * u.nm],
+        dw=1 * u.nm,
         **kwargs,
     ):
         """
@@ -720,28 +691,27 @@ class Spectrum:
         with plt.style.context(style), quantity_support():
 
             # setup the basic axes
-            ax = setup_axes_with_rainbow(
-                ax=ax, rainbow=rainbow, figsize=figsize
-            )
+            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
 
-            w = self.wavelength(np.arange(xlim[0].to('nm').value,
-                                          xlim[1].to('nm').value,
-                                          dw.to('nm').value)*u.nm)
+            w = self.wavelength(
+                np.arange(
+                    xlim[0].to("nm").value, xlim[1].to("nm").value, dw.to("nm").value
+                )
+                * u.nm
+            )
             f = self.spectrum(w)
 
-            plot_as_slit_spectrum(
-                ax=ax,
-                wavelength=w.to("nm").value,
-                flux=f.value
+            plot_as_slit_rainbow(
+                ax=ax, wavelength=w.to("nm").value, flux=f.value, **kwargs
             )
 
             # add the axis labels
             wunit = w.unit.to_string("latex_inline")
             plt.xlabel(f"Wavelength ({wunit})")
 
-            plt.ylim(0,1)
+            plt.ylim(0, 1)
             plt.xlim(*xlim)
 
         return ax

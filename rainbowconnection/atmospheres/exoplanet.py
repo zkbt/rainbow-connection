@@ -51,13 +51,9 @@ class Exoplanet(DiscreteAtmosphere):
         self.radius = reference_radius
 
         # calculate the optical depth at zenith
-        z_over_H = (
-            (self._transit_radius - reference_radius) / self.H
-        ).decompose()
+        z_over_H = ((self._transit_radius - reference_radius) / self.H).decompose()
         tau_slant = np.exp(z_over_H)
-        self._tau_zenith_reference = (
-            tau_slant / self.fortney_factor()
-        ).decompose()
+        self._tau_zenith_reference = (tau_slant / self.fortney_factor()).decompose()
 
         # define the default wavelength grid to use
         self.default_wavelengths = self._wavelength

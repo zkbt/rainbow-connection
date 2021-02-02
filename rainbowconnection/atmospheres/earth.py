@@ -18,9 +18,7 @@ class Earth(DiscreteAtmosphere):
         """
 
         # load the ESO vertical transmission through Earth's atmosphere
-        filename = os.path.join(
-            data_directory, "earthtransmission.txt"
-        )
+        filename = os.path.join(data_directory, "earthtransmission.txt")
         d = ascii.read(filename, comment="#")
 
         # calculate the optical depth at zenith

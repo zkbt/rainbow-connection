@@ -56,9 +56,7 @@ class Sunset(Spectrum):
         """
         self.atmosphere.set_altitude(*args, **kwargs)
 
-    def spectrum(
-        self, wavelength=None, zenith_angle=None, altitude=None
-    ):
+    def spectrum(self, wavelength=None, zenith_angle=None, altitude=None):
         """
         The spectrum of the light source viewed through the atmosphere.
 
@@ -143,9 +141,7 @@ class Sunset(Spectrum):
             The azimuth angle along the horizon.
         """
 
-        with plt.style.context(
-            "dark_background"
-        ), quantity_support():
+        with plt.style.context("dark_background"), quantity_support():
 
             if ax is not None:
                 plt.sca(ax)
@@ -277,9 +273,7 @@ class Sunset(Spectrum):
         """
 
         # make sure we're using a dark background and astropy units
-        with plt.style.context(
-            "dark_background"
-        ), quantity_support():
+        with plt.style.context("dark_background"), quantity_support():
 
             if ax is not None:
                 plt.sca(ax)
@@ -346,14 +340,8 @@ class Sunset(Spectrum):
         wri = get_writer(filename)
 
         # calculate the grid of zenith angles for the star
-        min_zenith = (
-            90 * u.deg
-            - maxelevation
-            - self.source.angular_size()
-        )
-        minelevation = -(
-            self.source.angular_size() + motionresolution
-        )
+        min_zenith = 90 * u.deg - maxelevation - self.source.angular_size()
+        minelevation = -(self.source.angular_size() + motionresolution)
         max_zenith = 90 * u.deg - minelevation
         zenith_angles = (
             np.arange(
@@ -365,9 +353,7 @@ class Sunset(Spectrum):
         )
 
         # make a figure with a dark background
-        with plt.style.context(
-            "dark_background"
-        ), quantity_support():
+        with plt.style.context("dark_background"), quantity_support():
 
             # create a new figure
             fi, ax = plt.subplots(1, 1)
@@ -444,14 +430,8 @@ class Sunset(Spectrum):
         wri = get_writer(filename)
 
         # calculate the grid of zenith angles for the star
-        min_zenith = (
-            90 * u.deg
-            - maxelevation
-            - self.source.angular_size()
-        )
-        minelevation = -(
-            self.source.angular_size() + motionresolution
-        )
+        min_zenith = 90 * u.deg - maxelevation - self.source.angular_size()
+        minelevation = -(self.source.angular_size() + motionresolution)
         max_zenith = 90 * u.deg - minelevation
         zenith_angles = (
             np.arange(
@@ -462,9 +442,7 @@ class Sunset(Spectrum):
             * u.deg
         )
 
-        with plt.style.context(
-            "dark_background"
-        ), quantity_support():
+        with plt.style.context("dark_background"), quantity_support():
 
             fi = self.plot_everything(zenith_angles[0], **kwargs)
 
@@ -521,9 +499,7 @@ class Sunset(Spectrum):
             size of the plot.
         """
 
-        with plt.style.context(
-            "dark_background"
-        ), quantity_support():
+        with plt.style.context("dark_background"), quantity_support():
             xpixels, ypixels = pixels
             dpi = xpixels / width
             scale = 12 / width
@@ -556,9 +532,7 @@ class Sunset(Spectrum):
             # ax['cartoon'] = plt.subplot(gs_geometry[0])
             if "sky-zoom" in ingredients:
                 ax["sky-zoom"] = plt.subplot(gs_geometry[0])
-                self.plot_disk(
-                    ax=ax["sky-zoom"], zenith_angle=zenith_angle
-                )
+                self.plot_disk(ax=ax["sky-zoom"], zenith_angle=zenith_angle)
                 width = 1.1 * self.source.angular_size()
                 plt.xlim(-width, width)
                 plt.ylim(

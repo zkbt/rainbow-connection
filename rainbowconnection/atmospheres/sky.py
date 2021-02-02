@@ -27,13 +27,7 @@ class Sky(Spectrum):
         except AttributeError:
 
             def f(wavelength):
-                return (
-                    np.zeros(np.shape(wavelength))
-                    * u.W
-                    / u.m ** 2
-                    / u.nm
-                    * u.sr
-                )
+                return np.zeros(np.shape(wavelength)) * u.W / u.m ** 2 / u.nm * u.sr
 
             self.B = f
 
@@ -80,13 +74,8 @@ class Sky(Spectrum):
         )
 
         # calculate the optical depths at this angle
-        tau_scatter = (
-            self.atmosphere.tau_zenith_scatter
-            * effective_airmass
-        )
-        tau_absorb = (
-            self.atmosphere.tau_zenith_absorb * effective_airmass
-        )
+        tau_scatter = self.atmosphere.tau_zenith_scatter * effective_airmass
+        tau_absorb = self.atmosphere.tau_zenith_absorb * effective_airmass
 
         # estimate the single
         albedo = tau_scatter / (tau_absorb + tau_scatter)
@@ -100,9 +89,7 @@ class Sky(Spectrum):
             * self.B(self.atmosphere.default_wavelengths)
             * (1 - np.exp(-tau_absorb))
         )
-        scattering_intensity = (
-            albedo * mean_intensity * (1 - np.exp(-tau_scatter))
-        )
+        scattering_intensity = albedo * mean_intensity * (1 - np.exp(-tau_scatter))
         sky_intensity = thermal_intensity + scattering_intensity
 
         # bin this intensity onto the desired wavelengths

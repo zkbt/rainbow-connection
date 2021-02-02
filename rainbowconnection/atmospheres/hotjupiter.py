@@ -18,9 +18,7 @@ class HotJupiter(DiscreteAtmosphere):
             choice = "lambda_1500K_g10_wTiOVO.dat"
         else:
             choice = "lambda_1500K_g10_noTiOVO.dat"
-        filename = os.path.join(
-            data_directory, f"fortney/{choice}"
-        )
+        filename = os.path.join(data_directory, f"fortney/{choice}")
         d = ascii.read(filename, comment="#")
 
         # define the wavelength grid
@@ -41,10 +39,6 @@ class HotJupiter(DiscreteAtmosphere):
         self.radius = reference_radius
 
         # calculate the optical depth at zenith
-        z_over_H = (
-            (radiusinkm - reference_radius) / self.H
-        ).decompose()
+        z_over_H = ((radiusinkm - reference_radius) / self.H).decompose()
         tau_slant = np.exp(z_over_H)
-        self._tau_zenith_reference = (
-            tau_slant / self.fortney_factor()
-        ).decompose()
+        self._tau_zenith_reference = (tau_slant / self.fortney_factor()).decompose()

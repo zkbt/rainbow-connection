@@ -22,8 +22,6 @@ from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from scipy.integrate import quad
 
 
-data_directory = pkg_resources.resource_filename(
-    "rainbowconnection", "data"
-)
+data_directory = pkg_resources.resource_filename("rainbowconnection", "data")
 
 package_name = "rainbow-connection"

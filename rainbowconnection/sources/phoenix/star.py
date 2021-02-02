@@ -15,11 +15,7 @@ class Star(Spectrum):
         self.teff = teff
         self.radius = radius
         self.mass = mass
-        self.logg = np.log10(
-            (con.G * self.mass / self.radius ** 2)
-            .to("cm/s**2")
-            .value
-        )
+        self.logg = np.log10((con.G * self.mass / self.radius ** 2).to("cm/s**2").value)
         self.metallicity = metallicity
 
         w, f = read_phoenix(
@@ -30,9 +26,7 @@ class Star(Spectrum):
             photons=False,
         )
         self._wavelength = w * u.nm
-        self._flux = (f * u.erg / u.s / u.cm ** 2 / u.nm).to(
-            u.W / u.nm / u.m ** 2
-        )
+        self._flux = (f * u.erg / u.s / u.cm ** 2 / u.nm).to(u.W / u.nm / u.m ** 2)
         self.default_wavelengths = self._wavelength
 
         # FIXME -- check if it's surface flux or something else!??!?!
