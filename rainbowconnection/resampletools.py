@@ -233,7 +233,7 @@ def bintogrid(
     if drop_nans:
         ok = np.isfinite(newy)
     else:
-        ok = np.ones_like(newx).astype(np.bool)
+        ok = np.ones_like(newx).astype(bool)
     # return binned x, y, unc
     if unc is None:
         return newx[ok], newy[ok]
@@ -332,7 +332,7 @@ def interpolation_weights(bounds, value, verbose=True):
     if bounds[0] == bounds[1]:
         return 1.0, 0.0
     assert (value >= np.min(bounds)) * (value <= np.max(bounds))
-    span = np.float(bounds[1] - bounds[0])
+    span = float(bounds[1] - bounds[0])
     weights = [
         (bounds[1] - value) / span,
         (value - bounds[0]) / span,

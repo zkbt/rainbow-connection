@@ -15,6 +15,7 @@ from ...imports import *
 from .utils import *
 from ...resampletools import *
 from astropy.io import fits
+from ..thermal import Thermal
 
 preloaded = {}
 
@@ -233,8 +234,8 @@ def get_downloaded_models():
             Teffs, loggs = [], []
             for t in np.sort(glob.glob(this_metallicity)):
                 x = t.split("/lte")[-1].split("-")[0:2]
-                Teffs.append(np.float(x[0]))
-                loggs.append(np.float(x[1].split("+")[0]))
+                Teffs.append(float(x[0]))
+                loggs.append(float(x[1].split("+")[0]))
             Teffs = np.array(Teffs)
             loggs = np.array(loggs)
 
@@ -253,7 +254,7 @@ def get_downloaded_models():
 availability_by_metallicity = get_downloaded_models()
 
 
-def read_exact_phoenix(Teff=5800, logg=4.5, metallicity=0.0, photons=True, R=None):
+def read_exact_phoenix(Teff=5800, logg=4.5, metallicity=0.0, photons=True, R=None, extend_wavelengths=False):
 
     key = (Teff, logg, metallicity, photons, R)
 
@@ -273,27 +274,44 @@ def read_exact_phoenix(Teff=5800, logg=4.5, metallicity=0.0, photons=True, R=Non
         flux_cgs = hdus[0].data
         # flux units are erg/s/cm^2/nm
         flux_nm = flux_cgs / 1e7
-        h = hdus[0].header
+        header = hdus[0].header
 
         # wavelength units are nm
-        wave = np.exp(h["CRVAL1"] + h["CDELT1"] * np.arange(h["NAXIS1"])) / 10
+        wave = np.exp(header["CRVAL1"] + header["CDELT1"] * np.arange(header["NAXIS1"])) / 10
 
-        """
-        # include kludge to extend to wavelengths beyond 2500nm
-        t = rc.Thermal(Teff*u.K, radius=1*u.Rsun).at(1*u.Rsun)
-        extra_wave = np.linspace(np.max(wave) + 100, 6000)*u.nm
-        extra_flux = t.surface_flux(extra_wave).to('erg/(s * cm**2 * nm)')
+        if extend_wavelengths:
+            # include kludge to extend to wavelengths beyond 2500nm
+            t = Thermal(Teff*u.K, radius=1*u.Rsun).at(1*u.Rsun)
+            extra_wave = np.linspace(np.max(wave), 6000)*u.nm
+            extra_flux = t.surface_flux(extra_wave).to('erg/(s * cm**2 * nm)')
 
-        wave = np.hstack([wave, extra_wave.value])
-        flux_nm = np.hstack([flux_nm, extra_flux.value])
-        """
+            wave = np.hstack([wave, extra_wave.value])
+            flux_nm = np.hstack([flux_nm, extra_flux.value])
 
         # energy = (con.h*con.c/w/u.ph).to('J/ph')
         # f = (t.surface_flux(w)/energy).to('ph/(s * cm**2 * nm)')
+        """
+        k_B = 1.38e-16       # erg/K
+        if extend_wavelengths:
+
+            # define extra wavelength grid
+            original_R = 1/header["CDELT1"]
+            w_extra = np.max(wave)*np.exp(np.arange(int(original_R))/original_R)
+            w_extra_in_cm = w_extra/1e7
+
+            # calculate the thing in the
+            up = h * c / (w_extra_in_cm * k_B * Teff)
+
+            # calculate the intensity from the Planck function
+            flux_extra = np.pi * (2 * h * c ** 2 / w_extra_in_cm ** 5 / (np.exp(up) - 1))
+
+            wave = np.hstack([wave, w_extra])
+            flux_nm = np.hstack([flux_nm, flux_extra])
+            print('extending wavelengths')"""
 
         if photons:
-            h = 6.6260755e-27  # erg s
-            c = 2.99792458e10  # cm/s
+            h = 6.6260755e-27	 # erg s
+            c = 2.99792458e10    # cm/s
             w_cm = wave / 1e7
             photon_energy = h * c / w_cm
             flux = flux_nm / photon_energy
@@ -303,10 +321,11 @@ def read_exact_phoenix(Teff=5800, logg=4.5, metallicity=0.0, photons=True, R=Non
         if R is not None:
             wave, flux = bintoR(wave, flux, R=R)
         preloaded[key] = wave, flux
+
     return wave, flux
 
 
-def read_phoenix(Teff=5800, logg=4.5, metallicity=0.0, photons=True, R=None):
+def read_phoenix(Teff=5800, logg=4.5, metallicity=0.0, photons=True, R=None, extend_wavelengths=False):
     try:
         w, f = read_exact_phoenix(
             Teff=Teff,
@@ -314,6 +333,7 @@ def read_phoenix(Teff=5800, logg=4.5, metallicity=0.0, photons=True, R=None):
             metallicity=metallicity,
             photons=photons,
             R=R,
+            extend_wavelengths=extend_wavelengths
         )
     except FileNotFoundError:
         # print('The exact parameters {} were not found in {}'.format(locals(), phoenix_directory))
@@ -338,6 +358,7 @@ def read_phoenix(Teff=5800, logg=4.5, metallicity=0.0, photons=True, R=None):
             metallicity=metallicity,
             photons=photons,
             R=R,
+            extend_wavelengths=extend_wavelengths
         )
         w_other, f_other = read_exact_phoenix(
             Teff=close_temperatures[1],
@@ -345,6 +366,7 @@ def read_phoenix(Teff=5800, logg=4.5, metallicity=0.0, photons=True, R=None):
             metallicity=metallicity,
             photons=photons,
             R=R,
+            extend_wavelengths=extend_wavelengths
         )
         assert (w_one == w_other).all()
         w = w_one

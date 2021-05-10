@@ -10,6 +10,7 @@ class Star(Spectrum):
         mass=1 * u.Msun,
         metallicity=0.0,
         R=None,
+        extend_wavelengths=False
     ):
 
         self.teff = teff
@@ -24,6 +25,7 @@ class Star(Spectrum):
             metallicity=self.metallicity,
             R=R,
             photons=False,
+            extend_wavelengths=extend_wavelengths
         )
         self._wavelength = w * u.nm
         self._flux = (f * u.erg / u.s / u.cm ** 2 / u.nm).to(u.W / u.nm / u.m ** 2)

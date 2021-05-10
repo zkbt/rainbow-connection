@@ -236,7 +236,7 @@ class Spectrum:
         w = self.default_wavelengths
         f = self.spectrum(w)
 
-        ok = np.ones(np.shape(w)).astype(np.bool)
+        ok = np.ones(np.shape(w)).astype(bool)
         if lower is not None:
             ok *= w >= lower
 

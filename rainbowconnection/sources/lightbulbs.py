@@ -1,7 +1,7 @@
 from .spectrum import *
 from .thermal import Thermal
 
-__all__ = ["LightBulb", "Incandescent", "Sodium", "EmissionLines"]
+__all__ = ["LightBulb", "Incandescent", "Sodium", "EmissionLines", "WhiteLED"]
 
 
 def gauss(x, x0, sigma):
@@ -98,13 +98,17 @@ class EmissionLines(LightBulb):
             The line width, which can either be just
             one number, or an array indicating a separate
             linewidth for each line.
+
+        power : float (with astropy units)
+            The total power of the light bulb,
+            integrated over all wavelengths.
         """
 
         # store the information about the lines
-        self.line_centers = line_centers
+        self.line_centers = np.atleast_1d(line_centers)
         n_lines = len(self.line_centers)
-        self.line_amplitudes = np.array(line_amplitudes) * u.Unit("") * np.ones(n_lines)
-        self.line_widths = np.array(line_width) * np.ones(n_lines)
+        self.line_amplitudes = np.atleast_1d(line_amplitudes) * u.Unit("") * np.ones(n_lines)
+        self.line_widths = np.atleast_1d(line_width) * np.ones(n_lines)
 
         # start with a ridiculous radius
         self.radius = 1 * u.m
@@ -142,3 +146,19 @@ class EmissionLines(LightBulb):
 
         # return the flux, in convenient units
         return brightness * flux  # .to("W/(nm * m**2)")
+
+
+class WhiteLED(EmissionLines):
+    def __init__(self, power=100*u.W):
+        """
+        Parameters
+        ----------
+        power : float (with astropy units)
+            The total power of the light bulb,
+            integrated over all wavelengths.
+        """
+        EmissionLines.__init__(self,
+                               line_centers=np.array([450, 560])*u.nm,
+                               line_amplitudes=[0.2,1],
+                               line_width=np.array([15, 80])*u.nm,
+                               power=power)

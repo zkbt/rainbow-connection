@@ -17,3 +17,4 @@ def test_download():
 def test_phoenix_spectra():
     Star().plot()
     Star(teff=10000 * u.K, R=500).at(1 * u.au).plot()
+    Star(teff=10000 * u.K, R=500, extend_wavelengths=True).at(1 * u.au).plot()
