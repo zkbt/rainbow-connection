@@ -2,6 +2,10 @@ from .spectrum import *
 
 
 class Blank(Spectrum):
+    """
+    A very boring Spectrum.
+    """
+
     def __init__(self):
         Spectrum.__init__(
             self,
