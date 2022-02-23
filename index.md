@@ -1,6 +1,9 @@
 # rainbow-connection
 
-<video src="earth-sunset.mp4" width=100% controls autoplay loop\>
+<video src="earth-sunset.mp4" width=100% controls autoplay loop>
+[Eep! Something went wrong when trying to display a video!]
+</video>
+
 
 🌈🖍🎨 This package was designed primarily for producing pedagogical plots related to light and color. 🌈🖍🎨
 
