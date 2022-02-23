@@ -2,7 +2,7 @@ from .imports import *
 from .colortools import plot_simple_rainbow
 
 
-def setup_axes_with_rainbow(ax=None, rainbow=True, figsize=(5, 2.5)):
+def setup_axes_with_rainbow(ax=None, rainbow=True, figsize=None):
     # create new ax(s), unless we're supposed to over plot on one
     if ax is None:
         plt.figure(figsize=figsize)

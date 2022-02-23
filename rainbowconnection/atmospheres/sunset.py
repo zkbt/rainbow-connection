@@ -386,6 +386,7 @@ class Sunset(Spectrum):
         skyresolution=0.5 * u.deg,
         skynormalization=0.7,
         motionresolution=0.5 * u.deg,
+        overwrite=False,
         **kwargs,
     ):
 
@@ -441,6 +442,16 @@ class Sunset(Spectrum):
             )
             * u.deg
         )
+
+        if os.path.exists(filename):
+            if overwrite is False:
+                message = f"""
+                Filename {filename} already exists.
+                Not recreating the movie, unless
+                you rerun with `overwrite=True`.
+                """
+                warnings.warn(message)
+                return
 
         with plt.style.context("dark_background"), quantity_support():
 

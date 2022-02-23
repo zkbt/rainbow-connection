@@ -23,7 +23,13 @@ def get_writer(filename, fps=30, **kw):
         try:
             writer = ani.writers["ffmpeg"](fps=fps, **kw)
         except (RuntimeError, KeyError):
-            raise RuntimeError("This computer seems unable to ffmpeg.")
+            message = """
+            This computer seems unable to run ffmpeg
+            to create `.mp4` movies. Try running
+                `conda install ffmpeg`
+            and trying again.
+            """
+            raise RuntimeError()
     else:
         try:
             writer = ani.writers["pillow"](fps=fps, **kw)

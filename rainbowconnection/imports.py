@@ -1,6 +1,13 @@
+import copy, pkg_resources, os, glob, warnings
+
+data_directory = pkg_resources.resource_filename("rainbowconnection", "data")
+package_name = "rainbow-connection"
+
 import numpy as np
 import matplotlib.pyplot as plt
-import copy, pkg_resources, os, glob, warnings
+
+plt.matplotlib.rcParams["figure.figsize"] = (8, 3)
+plt.matplotlib.rcParams["figure.dpi"] = 300
 
 from astropy.io import ascii
 import astropy.units as u
@@ -20,8 +27,3 @@ from tqdm import tqdm
 
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from scipy.integrate import quad
-
-
-data_directory = pkg_resources.resource_filename("rainbowconnection", "data")
-
-package_name = "rainbow-connection"
