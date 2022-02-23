@@ -38,7 +38,7 @@ class Atmosphere:
         rainbow=True,
         color=None,
         style="dark_background",
-        figsize=(5.0, 2.5),
+        figsize=None,
         **kwargs,
     ):
         """

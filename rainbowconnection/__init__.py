@@ -1,4 +1,4 @@
-from .version import __version__
+from .version import *
 from .sources import *
 from .atmospheres import *
 from .resampletools import bintogrid, bintoR

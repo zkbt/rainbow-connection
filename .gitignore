@@ -1,5 +1,5 @@
 #
-*.ipynb
+sandbox/
 *.mp4
 *.png
 *.pdf

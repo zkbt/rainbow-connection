@@ -420,7 +420,7 @@ class Spectrum:
         rainbow=True,
         color="auto",
         style="dark_background",
-        figsize=(5, 2.5),
+        figsize=None,
         **kwargs,
     ):
         """
@@ -495,7 +495,7 @@ class Spectrum:
         rainbow=True,
         foreground=True,
         style="dark_background",
-        figsize=(5, 2.5),
+        figsize=None,
         **kwargs,
     ):
         """
@@ -578,7 +578,7 @@ class Spectrum:
         style="dark_background",
         foreground=True,
         ylim=[0, 120],
-        figsize=(5, 2.5),
+        figsize=None,
         **kwargs,
     ):
         """
@@ -653,7 +653,7 @@ class Spectrum:
         ax=None,
         rainbow=True,
         style="dark_background",
-        figsize=(5, 2.5),
+        figsize=None,
         xlim=[360 * u.nm, 760 * u.nm],
         dw=1 * u.nm,
         **kwargs,
@@ -718,15 +718,15 @@ class Spectrum:
 
     def cartoon_sun(self):
         """
-        Create a simple cartoon of the star,
-        with appropriate color and angular size.
+        Create a simple cartoon of the star
+        with appropriate.
         """
 
         # figure out the color of the star
         rgb = self.to_color()
 
         with plt.style.context("dark_background"):
-            fi = plt.figure(figsize=(5, 2.5))
+            fi = plt.figure(figsize=None)
             ax = fi.add_axes([0, 0, 1, 1])
             plt.scatter(0, 0, c=rgb, s=8000)
             plt.xticks([])
