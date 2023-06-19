@@ -576,6 +576,7 @@ class Spectrum:
     def plot_as_rainbow(
         self,
         ax=None,
+        wavelength=None,
         rainbow=True,
         color="auto",
         style="dark_background",
@@ -627,9 +628,9 @@ class Spectrum:
             # setup the basic axes
             ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
-            # make sure at least some wavelengths are defined
-            w = np.arange(330, 760, 1) * u.nm
+            w = self.get_wavelength(wavelength)
             f = self.spectrum(w)
+
             # KLUDGE?
             norm = np.max(f.value[(w > 400 * u.nm) & (w < 685 * u.nm)]) / 100
             if foreground:
@@ -654,6 +655,7 @@ class Spectrum:
     def plot_as_slit_rainbow(
         self,
         ax=None,
+        wavelength=None,
         rainbow=True,
         style="dark_background",
         figsize=None,
@@ -697,13 +699,11 @@ class Spectrum:
             ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
-            w = np.arange(
-                    xlim[0].to("nm").value, xlim[1].to("nm").value, dw.to("nm").value
-                )* u.nm
+            w = self.get_wavelength(wavelength)
             f = self.spectrum(w)
-
+            assert(np.shape(w) == np.shape(f))
             plot_as_slit_rainbow(
-                ax=ax, wavelength=w.to("nm").value, flux=f.value, **kwargs
+                ax=ax, wavelength=w.to_value("nm"), flux=f.value, **kwargs
             )
 
             # add the axis labels

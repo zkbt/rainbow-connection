@@ -6,6 +6,8 @@ with the design of rainbowconnection.
 """
 
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
+
 import numpy as np
 from matplotlib.patches import Polygon
 from six.moves import reduce
@@ -52,13 +54,11 @@ with warnings.catch_warnings():
     from colour import SpectralDistribution
 
     # define a standard set of color-matching functions
-    CMFs = first_item(filter_cmfs("CIE 1931 2 Degree Standard Observer").values())
+    CMFs = first_item(filter_cmfs("CIE 2015 2 Degree Standard Observer").values())
 
     def plot_simple_rainbow(
         ax=None,
-        wavelength=None,
         flux=None,
-        cmfs="CIE 1931 2 Degree Standard Observer",
         **kwargs
     ):
         """
@@ -69,8 +69,6 @@ with warnings.catch_warnings():
         ----------
         ax : matplotlib.axes._subplots.AxesSubplot
             The ax into which the rainbow should be drawn.
-        cmfs : string
-            The color matching function(s?) to use.
 
         Returns
         -------
@@ -81,27 +79,22 @@ with warnings.catch_warnings():
         if ax is None:
             ax = plt.gca()
 
-        # pull out the CMFss
-        cmfs = first_item(filter_cmfs(cmfs).values())
 
-        if wavelength is None:
-            # create a grid of wavelengths (at which CMFss are useful)
-            wavelength = cmfs.wavelengths
-
-        ok = (wavelength >= np.min(cmfs.wavelengths)) & (
-            wavelength <= np.max(cmfs.wavelengths)
-        )
+        # create a grid of wavelengths (at which CMFss are useful)
+        wavelength = CMFs.wavelengths
 
         # create colors at theose wavelengths
         colours = XYZ_to_plotting_colourspace(
-            wavelength_to_XYZ(wavelength[ok], cmfs),
+            wavelength_to_XYZ(wavelength, CMFs),
             CCS_ILLUMINANTS["CIE 1931 2 Degree Standard Observer"]["E"],
         )
 
         # normalize the colors to their maximum?
-        colours = CONSTANTS_COLOUR_STYLE.colour.colourspace.cctf_encoding(
-            normalise_maximum(colours)
-        )
+        #colours = CONSTANTS_COLOUR_STYLE.colour.colourspace.cctf_encoding(
+        #    normalise_maximum(colours)
+        #)
+        colours = np.maximum(0, colours / np.max(colours))
+
 
         # create y values that will be plotted (these could be spectrum)
         if flux is None:
@@ -114,23 +107,25 @@ with warnings.catch_warnings():
             np.vstack(
                 [
                     (x_min, 0),
-                    tstack([wavelength[ok], flux[ok]]),
+                    tstack([wavelength, flux]),
                     (x_max, 0),
                 ]
             ),
             facecolor="none",
             edgecolor="none",
+            clip_on=True
         )
         ax.add_patch(polygon)
 
         # draw bars, with the colors at each vertical stripe
         padding = 0.1
         ax.bar(
-            x=wavelength[ok] - padding / 2,
-            height=max(flux[ok]),
+            x=wavelength - padding / 2,
+            height=max(flux),
             width=1 + padding,
             color=colours,
             align="edge",
+            clip_on=True
         )
 
         return ax
@@ -139,7 +134,6 @@ with warnings.catch_warnings():
         ax=None,
         wavelength=None,
         flux=None,
-        cmfs="CIE 1931 2 Degree Standard Observer",
         rainbowtop=np.inf,
         **kwargs
     ):
@@ -171,49 +165,54 @@ with warnings.catch_warnings():
         if flux is None:
             flux = np.ones_like(wavelength)
 
-        # pull out only the values that *can* be converted to colors
-        ok = (wavelength >= np.min(CMFs.wavelengths)) & (
-            wavelength <= np.max(CMFs.wavelengths)
-        )
 
-        w, f = wavelength[ok], flux[ok]
+        # get the XYZ for the valid wavelengths
+        XYZ_on_CMF_grid = wavelength_to_XYZ(CMFs.wavelengths, CMFs)
 
-        # clip the top of the box?
-        f = np.minimum(f, rainbowtop)
+        # create colors at those wavelengths
+        colours_on_CMF_grid = XYZ_to_plotting_colourspace(XYZ_on_CMF_grid)
 
-        XYZ = wavelength_to_XYZ(w)
+        # create imaginary wavelengths as needed
+        if wavelength is None:
+            wavelength = np.arange(300, 1000)
 
-        # create colors at theose wavelengths
-        colours = XYZ_to_plotting_colourspace(XYZ)
-
-        # normalize the colors to their maximum?
-        # colours = CONSTANTS_COLOUR_STYLE.colour.colourspace.cctf_encoding(
-        #    normalise_maximum(colours))
+        # interpolate colors to actual wavelengths
+        colour_interpolator = interp1d(CMFs.wavelengths, colours_on_CMF_grid, axis=0, bounds_error=False, fill_value=0)
+        colours = colour_interpolator(wavelength)
         colours = np.maximum(0, colours / np.max(colours))
 
-        x_min, x_max = min(w), max(w)
-        y_min, y_max = 0, max(f) + max(f) * 0.05
+        # create intensities that will be plotted (these could be spectrum)
+        if flux is None:
+            flux = np.ones_like(wavelength)
+
+
+
+  
+
+        x_min, x_max = min(wavelength), max(wavelength)
+        y_min, y_max = 0, max(flux) + max(flux) * 0.05
 
         # create a polygon to define the top of the bars?
         polygon = Polygon(
             np.vstack(
                 [
                     (x_min, 0),
-                    tstack([w, f]),
+                    tstack([wavelength, flux]),
                     (x_max, 0),
                 ]
             ),
             facecolor="none",
             edgecolor="none",
+            clip_on=True
         )
         ax.add_patch(polygon)
 
         # draw bars, with the colors at each vertical stripe
         padding = 0.1
-        dw = np.mean(np.diff(w))
+        dw = np.mean(np.diff(wavelength))
         ax.bar(
-            x=w,
-            height=f,
+            x=wavelength,
+            height=flux,
             width=dw,
             color=colours,
             clip_path=polygon,
@@ -227,7 +226,6 @@ with warnings.catch_warnings():
         ax=None,
         wavelength=None,
         flux=None,
-        cmfs="CIE 1931 2 Degree Standard Observer",
         **kwargs
     ):
         """
@@ -250,11 +248,6 @@ with warnings.catch_warnings():
             The fluxes to include in the spectrum.
             In units of whatever, but not as astropy units.
 
-        cmfs : string
-            The color matching function(s?) to use.
-
-        vector : bool
-
 
         Returns
         -------
@@ -266,43 +259,44 @@ with warnings.catch_warnings():
         if ax is None:
             ax = plt.gca()
 
-        # make sure we have a grid of wavelengths defined
-        if wavelength is None:
-            # create a grid of wavelengths (at which CMFss are useful)
-            wavelength = CMFs.wavelengths
 
-        # create y values that will be plotted (these could be spectrum)
+        # get the XYZ for the valid wavelengths
+        XYZ_on_CMF_grid = wavelength_to_XYZ(CMFs.wavelengths, CMFs)
+
+        # create colors at those wavelengths
+        colours_on_CMF_grid = XYZ_to_plotting_colourspace(XYZ_on_CMF_grid)
+
+        # create imaginary wavelengths as needed
+        if wavelength is None:
+            wavelength = np.arange(300, 1000)
+
+        # interpolate colors to actual wavelengths
+        colour_interpolator = interp1d(CMFs.wavelengths, colours_on_CMF_grid, axis=0, bounds_error=False, fill_value=0)
+        colours = colour_interpolator(wavelength)
+
+        # create intensities that will be plotted (these could be spectrum)
         if flux is None:
             flux = np.ones_like(wavelength)
 
-        # pull out only the values that *can* be converted to colors
-        ok = (wavelength >= np.min(CMFs.wavelengths)) & (
-            wavelength <= np.max(CMFs.wavelengths)
-        )
-        w, f = wavelength[ok], flux[ok]
-
-        # get the XYZ for the wavelengths
-        XYZ = wavelength_to_XYZ(w)
-
-        # create colors at those wavelengths
-        colours = XYZ_to_plotting_colourspace(XYZ)
 
         # normalize the colors to their maximum?
         # colours = CONSTANTS_COLOUR_STYLE.colour.colourspace.cctf_encoding(
         #    normalise_maximum(colours))
 
         # normalize the brightness by the flux
-        colours *= f[:, np.newaxis]
+        colours *= flux[:, np.newaxis]/np.max(flux)
 
         # normalize to the brightest line
         colours = np.maximum(0, colours / np.max(colours))
 
         # draw as an RGB color image with imshow
-        ax.imshow(
+        dw = np.gradient(wavelength)
+        wavelength_edges = np.hstack([wavelength - dw/2, wavelength[-1] + dw[-1]/2])
+        slit_edges = np.array([0,1])
+        ax.pcolormesh(
+            wavelength_edges,
+            slit_edges,
             colours[np.newaxis, :, :],
-            aspect="auto",
-            extent=[np.min(w), np.max(w), 0, 1],
-            interpolation="nearest",
         )
-
+        plt.yticks([])
         return ax

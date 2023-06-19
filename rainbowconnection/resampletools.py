@@ -99,7 +99,7 @@ def fluxconservingresample(
     yout = np.diff(cdfout)
 
     if visualize:
-        fi, (ax_cdf, ax_pdf) = plt.subplots(2, 1, sharex=True, figsize=(9, 6))
+        fi, (ax_cdf, ax_pdf) = plt.subplots(2, 1, sharex=True, figsize=(9, 6), constrained_layout=True)
         inkw = dict(
             color="black",
             alpha=1,
@@ -171,7 +171,6 @@ def fluxconservingresample(
                 "Pausing a moment to check on interpolation; press return to continue."
             )
 
-        plt.tight_layout(rect=[0.0, 0.0, 0.67, 1])
         print("{:>6} = {:.5f}".format("Actual", np.sum(yin)))
         print(
             "{:>6} = {:.5f}".format(
