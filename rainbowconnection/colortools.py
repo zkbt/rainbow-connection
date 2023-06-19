@@ -120,7 +120,7 @@ def plot_simple_rainbow(
     ax.add_patch(polygon)
 
     # draw bars, with the colors at each vertical stripe
-    padding = 0.2
+    padding = 0.1
     ax.bar(
         x=wavelength[ok] - padding / 2,
         height=max(flux[ok]),
@@ -206,7 +206,7 @@ def plot_with_rainbow_fill(
     ax.add_patch(polygon)
 
     # draw bars, with the colors at each vertical stripe
-    padding = 0.0
+    padding = 0.1
     dw = np.mean(np.diff(w))
     ax.bar(
         x=w,

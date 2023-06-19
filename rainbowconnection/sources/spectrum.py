@@ -110,7 +110,7 @@ class Spectrum:
         surface_area : astropy.units.quantity.Quantity
             The emitting area of the surface, usually in m**2.
         """
-        return 4 * np.pi * self.radius ** 2
+        return 4 * np.pi * self.radius**2
 
     def wavelength(self, wavelength=None):
         """
@@ -160,7 +160,7 @@ class Spectrum:
         try:
             # if there's a distance, return a flux
             assert self.distance is not None
-            return 4 * np.pi * self.distance ** 2
+            return 4 * np.pi * self.distance**2
         except (AttributeError, AssertionError):
             # by default, simply return a luminosity
             return 1.0
@@ -370,7 +370,7 @@ class Spectrum:
         F_disk = self.spectrum(wavelength)
 
         # make sure we're dealing with a flux
-        assert F_disk.unit.is_equivalent(u.W / u.m ** 2 / u.nm)
+        assert F_disk.unit.is_equivalent(u.W / u.m**2 / u.nm)
 
         # calculate the mean intensity
         solid_angle = np.pi * self.angular_size() ** 2
@@ -399,7 +399,7 @@ class Spectrum:
         F_disk = self.spectrum(wavelength)
 
         # make sure we're dealing with a flux
-        assert F_disk.unit.is_equivalent(u.W / u.m ** 2 / u.nm)
+        assert F_disk.unit.is_equivalent(u.W / u.m**2 / u.nm)
 
         # calculate the mean intensity
         solid_angle = np.pi * self.angular_size() ** 2
@@ -421,6 +421,7 @@ class Spectrum:
         color="auto",
         style="dark_background",
         figsize=None,
+        roygbiv=False,
         **kwargs,
     ):
         """
@@ -458,7 +459,9 @@ class Spectrum:
         with plt.style.context(style), quantity_support():
 
             # setup the basic axes
-            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
+            ax = setup_axes_with_rainbow(
+                ax=ax, rainbow=rainbow, figsize=figsize, roygbiv=roygbiv
+            )
 
             # make sure at least some wavelengths are defined
             w = self.wavelength(wavelength)
