@@ -84,10 +84,11 @@ setup(
         "numpy",
         "scipy",
         "ipython",
-        "matplotlib>=3.0",
+        "matplotlib>=3.7.1", # 3.6 doesn't have RGB colormesh
         "jupyter",
         "astropy>=4.0",
         "colour-science>=0.4.2",
+        "chromatic-lightcurves>=0.4.5",
         "tqdm",
     ],
     # what version of Python is required?

@@ -1,16 +1,20 @@
 from IPython import get_ipython
-get_ipython().magic(u'matplotlib inline')
+try:
+    if get_ipython().__class__.__name__ == 'ZMQInteractiveShell':
+        get_ipython().magic(u'matplotlib inline')
+except AttributeError:
+    pass
 
-import copy, pkg_resources, os, glob, warnings
-
-data_directory = pkg_resources.resource_filename("rainbowconnection", "data")
+import copy, inspect, os, glob, warnings
+package_directory = os.path.dirname(inspect.getfile(inspect.currentframe()))
+data_directory = os.path.join(package_directory, 'data')
 package_name = "rainbow-connection"
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 plt.matplotlib.rcParams["figure.figsize"] = (8, 3)
-plt.matplotlib.rcParams["figure.dpi"] = 300
+plt.matplotlib.rcParams["figure.dpi"] = 100
 
 from astropy.io import ascii
 import astropy.units as u

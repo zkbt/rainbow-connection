@@ -3,7 +3,7 @@ site_url: https://zkbt.github.com/rainbow-connection
 nav:
     - index.md
     - installation.ipynb
-    - light-sources.ipynb
+    - sources.ipynb
     - stars.ipynb
     - atmospheres.ipynb
     - sunsets.ipynb
