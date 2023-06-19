@@ -17,11 +17,11 @@ def setup_axes_with_rainbow(
 ):
     # create new ax(s), unless we're supposed to over plot on one
     if ax is None:
-        plt.figure(figsize=figsize)
+        fi = plt.figure(figsize=figsize)
         # decide whether to add a horizontal rainbow cartoon
         if rainbow:
             # create a two-part grid
-            gs = GridSpec(2, 1, height_ratios=[height_ratio, 1], hspace=0.0)
+            gs = GridSpec(2, 1, height_ratios=[height_ratio, 1], hspace=0.0, figure=fi)
 
             # plot a cartoon rainbow, in a box above
             ax_rainbow = plt.subplot(gs[0])

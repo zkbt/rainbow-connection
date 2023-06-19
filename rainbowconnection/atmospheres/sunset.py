@@ -541,7 +541,7 @@ class Sunset(Spectrum):
                 1,
                 4,
                 width_ratios=[0.18, 0.4, 0.09 * scale, 0.9],
-                wspace=0.0,
+                wspace=0.0, figure=fi, 
             )
 
             ax = {}

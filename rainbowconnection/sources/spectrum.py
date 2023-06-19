@@ -697,13 +697,9 @@ class Spectrum:
             ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
-
-            w = self.wavelength(
-                np.arange(
+            w = np.arange(
                     xlim[0].to("nm").value, xlim[1].to("nm").value, dw.to("nm").value
-                )
-                * u.nm
-            )
+                )* u.nm
             f = self.spectrum(w)
 
             plot_as_slit_rainbow(
