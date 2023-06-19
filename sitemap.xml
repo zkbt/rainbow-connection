@@ -2,42 +2,37 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://zkbt.github.com/rainbow-connection/</loc>
-         <lastmod>2022-02-23</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://zkbt.github.com/rainbow-connection/api/</loc>
-         <lastmod>2022-02-23</lastmod>
+         <lastmod>2023-06-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://zkbt.github.com/rainbow-connection/atmospheres/</loc>
-         <lastmod>2022-02-23</lastmod>
+         <lastmod>2023-06-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://zkbt.github.com/rainbow-connection/how-to-do-the-docs/</loc>
-         <lastmod>2022-02-23</lastmod>
+         <lastmod>2023-06-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://zkbt.github.com/rainbow-connection/installation/</loc>
-         <lastmod>2022-02-23</lastmod>
+         <lastmod>2023-06-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://zkbt.github.com/rainbow-connection/light-sources/</loc>
-         <lastmod>2022-02-23</lastmod>
+         <loc>https://zkbt.github.com/rainbow-connection/sources/</loc>
+         <lastmod>2023-06-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://zkbt.github.com/rainbow-connection/stars/</loc>
-         <lastmod>2022-02-23</lastmod>
+         <lastmod>2023-06-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://zkbt.github.com/rainbow-connection/sunsets/</loc>
-         <lastmod>2022-02-23</lastmod>
+         <lastmod>2023-06-19</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>
