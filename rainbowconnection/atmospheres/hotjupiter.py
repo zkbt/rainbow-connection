@@ -34,7 +34,7 @@ class HotJupiter(DiscreteAtmosphere):
         # define geometry of the atmosphere (how spherical?)
         mu = 2.3
         self.T = 1500 * u.K
-        g = 10 * u.m / u.s ** 2
+        g = 10 * u.m / u.s**2
         self.H = (con.k_B * self.T / mu / g / con.m_p).to("km")
         self.radius = reference_radius
 

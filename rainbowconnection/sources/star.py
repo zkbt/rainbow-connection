@@ -16,21 +16,21 @@ class Star(Spectrum):
         self.teff = teff
         self.radius = radius
         self.mass = mass
-        self.logg = np.log10((con.G * self.mass / self.radius ** 2).to("cm/s**2").value)
+        self.logg = np.log10((con.G * self.mass / self.radius**2).to("cm/s**2").value)
         self.metallicity = metallicity
         if wavelength is not None:
             R = None
 
         model_wavelength, model_photon_flux = get_phoenix_photons(
-            temperature=self.teff.to_value('K'),
+            temperature=self.teff.to_value("K"),
             logg=self.logg,
             metallicity=self.metallicity,
             R=R,
             wavelength=wavelength,
         )
-        self._wavelength = model_wavelength.to('nm')
-        energy_per_photon = (con.h*con.c/model_wavelength).to('J')/u.photon
-        surface_flux = model_photon_flux*energy_per_photon
+        self._wavelength = model_wavelength.to("nm")
+        energy_per_photon = (con.h * con.c / model_wavelength).to("J") / u.photon
+        surface_flux = model_photon_flux * energy_per_photon
         self._flux = surface_flux
         self.wavelength = self._wavelength
 

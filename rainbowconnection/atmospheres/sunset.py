@@ -25,7 +25,7 @@ class Sunset(Spectrum):
     # KLUDGE? (to make plots work)
     def get_wavelength(self, *args, **kwargs):
         return self.atmosphere.get_wavelength(*args, **kwargs)
-    
+
     # KLUDGE - there's got to be a better way to organize this?!
     @property
     def radius(self):
@@ -350,7 +350,6 @@ class Sunset(Spectrum):
                 """
                 warnings.warn(message)
                 return
-
 
         # get the appropriate animation writer
         wri = get_writer(filename)

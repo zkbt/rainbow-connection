@@ -11,7 +11,8 @@ def test_sunset():
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         t.animate_sunset(
-            d("earth-sun-quick.mp4"), motionresolution=15 * u.deg,
+            d("earth-sun-quick.mp4"),
+            motionresolution=15 * u.deg,
         )
 
 
@@ -23,13 +24,9 @@ def test_everything():
         warnings.simplefilter("ignore")
         t.animate_everything(
             d("earth-sun-everything-quick.mp4"),
-            motionresolution=15 * u.deg, 
+            motionresolution=15 * u.deg,
         )
 
 
 if __name__ == "__main__":
-    outputs = {
-        k.split("_")[-1]: v()
-        for k, v in locals().items()
-        if "test_" in k
-    }
+    outputs = {k.split("_")[-1]: v() for k, v in locals().items() if "test_" in k}

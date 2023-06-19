@@ -10,5 +10,5 @@ class Blank(Spectrum):
         Spectrum.__init__(
             self,
             wavelength=default_wavelength_grid,
-            flux=np.nan*np.ones(len(default_wavelength_grid))*u.W/u.m**2/u.nm,
+            flux=np.nan * np.ones(len(default_wavelength_grid)) * u.W / u.m**2 / u.nm,
         )

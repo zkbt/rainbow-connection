@@ -27,7 +27,7 @@ class Sky(Spectrum):
         except AttributeError:
 
             def f(wavelength):
-                return np.zeros(np.shape(wavelength)) * u.W / u.m ** 2 / u.nm * u.sr
+                return np.zeros(np.shape(wavelength)) * u.W / u.m**2 / u.nm * u.sr
 
             self.B = f
 

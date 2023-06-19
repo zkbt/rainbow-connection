@@ -11,10 +11,10 @@ from matplotlib.patches import Polygon
 from six.moves import reduce
 
 # colour-science throws off a lot of warnings; let's mostly ignore those
-import warnings 
+import warnings
+
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-
 
     from colour.algebra import LinearInterpolator, normalise_maximum
     from colour.colorimetry import (
@@ -51,12 +51,8 @@ with warnings.catch_warnings():
 
     from colour import SpectralDistribution
 
-
-
-
     # define a standard set of color-matching functions
     CMFs = first_item(filter_cmfs("CIE 1931 2 Degree Standard Observer").values())
-
 
     def plot_simple_rainbow(
         ax=None,
@@ -138,7 +134,6 @@ with warnings.catch_warnings():
         )
 
         return ax
-
 
     def plot_with_rainbow_fill(
         ax=None,
@@ -227,7 +222,6 @@ with warnings.catch_warnings():
         )
 
         return ax
-
 
     def plot_as_slit_rainbow(
         ax=None,

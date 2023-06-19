@@ -14,9 +14,10 @@ from ..plottingtools import setup_axes_with_rainbow
 
 def check_wavelength_unit(w):
     w.to("micron")
-        
+
 
 bgkw = dict(color="gray", alpha=0.5, zorder=-100)
+
 
 class Spectrum:
     """

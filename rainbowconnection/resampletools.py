@@ -220,7 +220,7 @@ def bintogrid(
             weights = np.ones_like(x)
         else:
             if weighting == "inversevariance":
-                weights = 1 / unc ** 2
+                weights = 1 / unc**2
         numerator = fluxconservingresample(x, y * weights, newx, visualize=False)
         denominator = fluxconservingresample(x, weights, newx, visualize=False)
 

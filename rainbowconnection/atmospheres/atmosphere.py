@@ -207,12 +207,10 @@ class DiscreteAtmosphere(Atmosphere):
         """
 
         # figure out the appropriate normalization
-        self._rayleigh_normalization = np.min(
-            self.tau_zenith * self.wavelength ** 4
-        )
+        self._rayleigh_normalization = np.min(self.tau_zenith * self.wavelength**4)
 
         w = self.wavelength
-        self.tau_zenith_scatter = self._rayleigh_normalization / w ** 4
+        self.tau_zenith_scatter = self._rayleigh_normalization / w**4
         self.tau_zenith_absorb = self.tau_zenith - self.tau_zenith_scatter
 
         if visualize:
