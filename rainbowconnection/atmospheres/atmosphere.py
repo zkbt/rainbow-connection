@@ -19,7 +19,7 @@ class Atmosphere:
         return f"{self.__class__.__name__}Atmosphere ({self.zenith_angle} from zenith, {self.altitude} scale heights from reference)"
 
     # FIXME (maybe both spectrum and atmosphere should inherit from the same thing?)
-    def wavelength(self, wavelength=None):
+    def get_wavelength(self, wavelength=None):
         """
         A wrapper to ensure at least some grid of wavelengths
         gets defined. A default grid will be assumed, unless
@@ -28,7 +28,7 @@ class Atmosphere:
 
         # make sure at least some wavelengths are defined
         if wavelength is None:
-            wavelength = self.default_wavelengths
+            wavelength = self.wavelength
         return wavelength.to("nm")
 
     def plot(
@@ -79,7 +79,7 @@ class Atmosphere:
             ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
-            w = self.wavelength(wavelength)
+            w = self.get_wavelength(wavelength)
 
             # pull out the spectrum
             t = self.transmission(w)
@@ -189,7 +189,7 @@ class DiscreteAtmosphere(Atmosphere):
 
         # read the transmission spectrum data
         self.read_transmission(**kwargs)
-        self.default_wavelengths = self._wavelength
+        self.wavelength = self._wavelength
 
         # set the zenith angle (or fall back to the current setting)
         self.set_zenith_angle(zenith_angle)
@@ -207,12 +207,10 @@ class DiscreteAtmosphere(Atmosphere):
         """
 
         # figure out the appropriate normalization
-        self._rayleigh_normalization = np.min(
-            self.tau_zenith * self.default_wavelengths ** 4
-        )
+        self._rayleigh_normalization = np.min(self.tau_zenith * self.wavelength**4)
 
-        w = self.default_wavelengths
-        self.tau_zenith_scatter = self._rayleigh_normalization / w ** 4
+        w = self.wavelength
+        self.tau_zenith_scatter = self._rayleigh_normalization / w**4
         self.tau_zenith_absorb = self.tau_zenith - self.tau_zenith_scatter
 
         if visualize:
@@ -242,7 +240,7 @@ class DiscreteAtmosphere(Atmosphere):
         Estimate the optical depth to *absorption*.
         (at the default wavelengths of the grid)
         '''
-        w = self.default_wavelengths
+        w = self.wavelength
         return self._rayleigh_normalization/w**4
 
     def tau_zenith_absorb(self):
@@ -287,7 +285,7 @@ class DiscreteAtmosphere(Atmosphere):
             The projected radius of the planet, with units.
         """
         # make sure at least some grid of wavelengths is defined
-        w = self.wavelength(wavelength)
+        w = self.get_wavelength(wavelength)
 
         # figure out the slant optical depth at the reference radius
         effective_airmass = self.fortney_factor()
@@ -342,7 +340,7 @@ class DiscreteAtmosphere(Atmosphere):
             self.set_altitude(altitude)
 
         # make sure at least some grid of wavelengths is defined
-        w = self.wavelength(wavelength)
+        w = self.get_wavelength(wavelength)
 
         # figure out the transmission at this altitude
         # FIXME -- this is a major kludge! do the integral!

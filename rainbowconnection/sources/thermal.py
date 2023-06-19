@@ -6,6 +6,7 @@ class Thermal(Spectrum):
 
         self.teff = teff
         self.radius = radius
+        self.wavelength = np.logspace(2, 3, 1000) * u.nm
 
     def intensity(self, wavelength):
         """
@@ -31,7 +32,7 @@ class Thermal(Spectrum):
         up = h * c / (wavelength * k * temperature)
 
         # calculate the intensity from the Planck function
-        intensity = (2 * h * c ** 2 / wavelength ** 5 / (np.exp(up) - 1)) / u.steradian
+        intensity = (2 * h * c**2 / wavelength**5 / (np.exp(up) - 1)) / u.steradian
 
         # return the intensity
         return intensity.to("W/(m**2*nm*sr)")
@@ -99,6 +100,6 @@ class Thermal(Spectrum):
             return super().integrate(lower=lower, upper=upper)
 
         # if there are infinite wavelength limits, do the integral analytically
-        surface_flux = con.sigma_sb * self.teff ** 4
+        surface_flux = con.sigma_sb * self.teff**4
         factor = (self.surface_area() / self.normalization()).decompose()
         return factor * surface_flux

@@ -1,4 +1,4 @@
-import os
+import os, warnings
 import matplotlib.pyplot as plt
 
 directory = "examples"
@@ -13,5 +13,7 @@ def d(s):
 
 
 def save(s):
-    plt.tight_layout()
-    plt.savefig(d(s), facecolor="black")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        plt.tight_layout()
+        plt.savefig(d(s), facecolor="black")

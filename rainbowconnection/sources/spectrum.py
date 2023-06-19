@@ -73,12 +73,12 @@ class Spectrum:
         self.radius = radius * u.Unit("")
 
         # set the default wavelengths to be the actual values
-        self.default_wavelengths = self._wavelength
+        self.wavelength = self._wavelength
 
     def surface_flux(self, wavelength=None):
 
         # make sure at least some grid of wavelengths is defined
-        w = self.wavelength(wavelength)
+        w = self.get_wavelength(wavelength)
 
         original_unit = self._flux.unit
         unitless_flux = self._flux.value
@@ -110,9 +110,9 @@ class Spectrum:
         surface_area : astropy.units.quantity.Quantity
             The emitting area of the surface, usually in m**2.
         """
-        return 4 * np.pi * self.radius ** 2
+        return 4 * np.pi * self.radius**2
 
-    def wavelength(self, wavelength=None):
+    def get_wavelength(self, wavelength=None):
         """
         A wrapper to ensure at least some grid of wavelengths
         gets defined. A default grid will be assumed, unless
@@ -121,7 +121,7 @@ class Spectrum:
 
         # make sure at least some wavelengths are defined
         if wavelength is None:
-            wavelength = self.default_wavelengths
+            wavelength = self.wavelength
         return wavelength.to("nm")
 
     def spectrum(self, wavelength=None):
@@ -160,7 +160,7 @@ class Spectrum:
         try:
             # if there's a distance, return a flux
             assert self.distance is not None
-            return 4 * np.pi * self.distance ** 2
+            return 4 * np.pi * self.distance**2
         except (AttributeError, AssertionError):
             # by default, simply return a luminosity
             return 1.0
@@ -233,7 +233,7 @@ class Spectrum:
             The integral over wavelength
         """
 
-        w = self.default_wavelengths
+        w = self.wavelength
         f = self.spectrum(w)
 
         ok = np.ones(np.shape(w)).astype(bool)
@@ -247,8 +247,8 @@ class Spectrum:
         return np.trapz(f[ok], w[ok])
 
         # np.trapz(f.value, w.value)*f.unit*w.unit
-        # wlower = lower or self.default_wavelengths[0]
-        # wupper = upper or self.default_wavelengths[-1]
+        # wlower = lower or self.wavelength[0]
+        # wupper = upper or self.wavelength[-1]
         # return quad(self.spectrum, wlower, wupper)
 
     def to_sd(self):
@@ -370,7 +370,7 @@ class Spectrum:
         F_disk = self.spectrum(wavelength)
 
         # make sure we're dealing with a flux
-        assert F_disk.unit.is_equivalent(u.W / u.m ** 2 / u.nm)
+        assert F_disk.unit.is_equivalent(u.W / u.m**2 / u.nm)
 
         # calculate the mean intensity
         solid_angle = np.pi * self.angular_size() ** 2
@@ -399,7 +399,7 @@ class Spectrum:
         F_disk = self.spectrum(wavelength)
 
         # make sure we're dealing with a flux
-        assert F_disk.unit.is_equivalent(u.W / u.m ** 2 / u.nm)
+        assert F_disk.unit.is_equivalent(u.W / u.m**2 / u.nm)
 
         # calculate the mean intensity
         solid_angle = np.pi * self.angular_size() ** 2
@@ -421,6 +421,7 @@ class Spectrum:
         color="auto",
         style="dark_background",
         figsize=None,
+        roygbiv=False,
         **kwargs,
     ):
         """
@@ -458,10 +459,12 @@ class Spectrum:
         with plt.style.context(style), quantity_support():
 
             # setup the basic axes
-            ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
+            ax = setup_axes_with_rainbow(
+                ax=ax, rainbow=rainbow, figsize=figsize, roygbiv=roygbiv
+            )
 
             # make sure at least some wavelengths are defined
-            w = self.wavelength(wavelength)
+            w = self.get_wavelength(wavelength)
 
             # pull out the spectrum
             f = self.spectrum(w)
@@ -536,7 +539,7 @@ class Spectrum:
             ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
-            w = self.wavelength(wavelength)
+            w = self.get_wavelength(wavelength)
 
             rgb = self.to_color()
 
@@ -625,7 +628,7 @@ class Spectrum:
             ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
-            w = self.wavelength(np.arange(330, 760, 1) * u.nm)
+            w = np.arange(330, 760, 1) * u.nm
             f = self.spectrum(w)
             # KLUDGE?
             norm = np.max(f.value[(w > 400 * u.nm) & (w < 685 * u.nm)]) / 100
@@ -694,13 +697,9 @@ class Spectrum:
             ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
-
-            w = self.wavelength(
-                np.arange(
+            w = np.arange(
                     xlim[0].to("nm").value, xlim[1].to("nm").value, dw.to("nm").value
-                )
-                * u.nm
-            )
+                )* u.nm
             f = self.spectrum(w)
 
             plot_as_slit_rainbow(

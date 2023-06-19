@@ -29,18 +29,27 @@ class LightBulb(Spectrum):
         except (AssertionError, AttributeError):
             return basic
 
+    def __init__(self, wavelength=None):
+        if wavelength is not None:
+            self.wavelength = wavelength
+        else:
+            self.wavelength = default_wavelength_grid
+
 
 class Incandescent(LightBulb, Thermal):
-    def __init__(self, power=100 * u.W):
+    def __init__(self, teff=3500 * u.K, power=100 * u.W, wavelength=None):
 
-        Thermal.__init__(self, teff=3500 * u.K, radius=1 * u.mm)
+        Thermal.__init__(self, teff=teff, radius=1 * u.mm)
+        LightBulb.__init__(self, wavelength=wavelength)
 
         # renormalize that radius to match the light output
         self.set_power(power)
 
 
 class Sodium(LightBulb):
-    def __init__(self, power=100 * u.W):
+    def __init__(self, power=100 * u.W, wavelength=None):
+
+        LightBulb.__init__(self, wavelength=wavelength)
 
         # start with a ridiculous radius
         self.radius = 1 * u.m
@@ -63,7 +72,7 @@ class Sodium(LightBulb):
         """
 
         # make sure a wavelength grid is defined
-        w = self.wavelength(wavelength)
+        w = self.get_wavelength(wavelength)
         flux = np.zeros(np.shape(w)) / u.nm
 
         # set the two lines
@@ -71,7 +80,7 @@ class Sodium(LightBulb):
         width = 2.0 * u.nm
 
         # give a normalization
-        brightness = 1 * u.W / u.m ** 2
+        brightness = 1 * u.W / u.m**2
 
         # add the two lines to the spectrum
         for l in lines:
@@ -83,7 +92,12 @@ class Sodium(LightBulb):
 
 class EmissionLines(LightBulb):
     def __init__(
-        self, line_centers, line_amplitudes, line_width=2 * u.nm, power=10 * u.W
+        self,
+        line_centers,
+        line_amplitudes,
+        line_width=2 * u.nm,
+        power=10 * u.W,
+        wavelength=None,
     ):
         """
         Parameters
@@ -104,10 +118,14 @@ class EmissionLines(LightBulb):
             integrated over all wavelengths.
         """
 
+        LightBulb.__init__(self, wavelength=wavelength)
+
         # store the information about the lines
         self.line_centers = np.atleast_1d(line_centers)
         n_lines = len(self.line_centers)
-        self.line_amplitudes = np.atleast_1d(line_amplitudes) * u.Unit("") * np.ones(n_lines)
+        self.line_amplitudes = (
+            np.atleast_1d(line_amplitudes) * u.Unit("") * np.ones(n_lines)
+        )
         self.line_widths = np.atleast_1d(line_width) * np.ones(n_lines)
 
         # start with a ridiculous radius
@@ -131,12 +149,12 @@ class EmissionLines(LightBulb):
         """
 
         # make sure a wavelength grid is defined
-        w = self.wavelength(wavelength)
+        w = self.get_wavelength(wavelength)
         flux_unit = self.line_amplitudes.unit / u.nm
         flux = np.zeros(np.shape(w)) * flux_unit
 
         # give a normalization
-        brightness = 1 * u.W / u.m ** 2
+        brightness = 1 * u.W / u.m**2
 
         # add the two lines to the spectrum
         for center, amplitude, width in zip(
@@ -149,7 +167,7 @@ class EmissionLines(LightBulb):
 
 
 class WhiteLED(EmissionLines):
-    def __init__(self, power=100*u.W):
+    def __init__(self, power=100 * u.W, wavelength=None):
         """
         Parameters
         ----------
@@ -157,8 +175,11 @@ class WhiteLED(EmissionLines):
             The total power of the light bulb,
             integrated over all wavelengths.
         """
-        EmissionLines.__init__(self,
-                               line_centers=np.array([450, 560])*u.nm,
-                               line_amplitudes=[0.2,1],
-                               line_width=np.array([15, 80])*u.nm,
-                               power=power)
+        EmissionLines.__init__(
+            self,
+            line_centers=np.array([450, 560]) * u.nm,
+            line_amplitudes=[0.2, 1],
+            line_width=np.array([15, 80]) * u.nm,
+            power=power,
+            wavelength=wavelength,
+        )

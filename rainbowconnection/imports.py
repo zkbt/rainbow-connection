@@ -1,3 +1,6 @@
+from IPython import get_ipython
+get_ipython().magic(u'matplotlib inline')
+
 import copy, pkg_resources, os, glob, warnings
 
 data_directory = pkg_resources.resource_filename("rainbowconnection", "data")
@@ -27,3 +30,7 @@ from tqdm import tqdm
 
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from scipy.integrate import quad
+
+
+default_wavelength_grid = np.linspace(100, 1000, 901) * u.nm
+

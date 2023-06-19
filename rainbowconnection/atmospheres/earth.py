@@ -28,7 +28,7 @@ class Earth(DiscreteAtmosphere):
         # define geometry of the atmosphere (how spherical?)
         mu = 29
         self.T = 273 * u.K
-        g = 9.8 * u.m / u.s ** 2
+        g = 9.8 * u.m / u.s**2
         self.H = (con.k_B * self.T / mu / g / con.m_p).to("km")
         self.radius = 1 * u.Rearth
 
@@ -39,3 +39,6 @@ class Earth(DiscreteAtmosphere):
         factor = np.exp(paranal_altitude / self.H)
         self._tau_zenith_reference = tau_zenith_paranal * factor
         # to get back to Boulder, set altiude=0.25(=2/8km)
+
+        # set the default wavelengths for simple plots
+        self.wavelength = self._wavelength

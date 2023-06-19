@@ -22,6 +22,10 @@ class Sunset(Spectrum):
         self.atmosphere = atmosphere
         self.sky = Sky(self)
 
+    # KLUDGE? (to make plots work)
+    def get_wavelength(self, *args, **kwargs):
+        return self.atmosphere.get_wavelength(*args, **kwargs)
+
     # KLUDGE - there's got to be a better way to organize this?!
     @property
     def radius(self):
@@ -81,7 +85,7 @@ class Sunset(Spectrum):
         """
 
         # the transmission wavelength sets the grid
-        w = self.atmosphere.wavelength(wavelength)
+        w = self.atmosphere.get_wavelength(wavelength)
 
         # get the transmission a
         t = self.atmosphere.transmission(
@@ -107,14 +111,14 @@ class Sunset(Spectrum):
 
         Returns
         -------
-        transitdepth : np.ndarry
+        transitdepth : np.array
             The fraction of starlight blocked, unitless.
         """
 
         # the transmission wavelength sets the grid
-        w = self.atmosphere.wavelength(wavelength)
+        w = self.atmosphere.get_wavelength(wavelength)
 
-        # get the transmission a
+        # get the transmission at those wavelengths
         rp = self.atmosphere.transit_radius(wavelength=w)
 
         # get the original spectrum
@@ -309,6 +313,7 @@ class Sunset(Spectrum):
         skyresolution=0.5 * u.deg,
         skynormalization=0.7,
         motionresolution=0.5 * u.deg,
+        overwrite=False,
     ):
         """
         Animate the sun setting.
@@ -335,6 +340,16 @@ class Sunset(Spectrum):
             The angular step the star moves between
             frames of the animation.
         """
+
+        if os.path.exists(filename):
+            if overwrite is False:
+                message = f"""
+                Filename {filename} already exists.
+                Not recreating the movie, unless
+                you rerun with `overwrite=True`.
+                """
+                warnings.warn(message)
+                return
 
         # get the appropriate animation writer
         wri = get_writer(filename)
@@ -526,7 +541,7 @@ class Sunset(Spectrum):
                 1,
                 4,
                 width_ratios=[0.18, 0.4, 0.09 * scale, 0.9],
-                wspace=0.0,
+                wspace=0.0, figure=fi, 
             )
 
             ax = {}
