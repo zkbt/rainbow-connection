@@ -56,7 +56,7 @@ class Exoplanet(DiscreteAtmosphere):
         self._tau_zenith_reference = (tau_slant / self.fortney_factor()).decompose()
 
         # define the default wavelength grid to use
-        self.default_wavelengths = self._wavelength
+        self.wavelength = self._wavelength
 
         # set the zenith angle (or fall back to the current setting)
         self.set_zenith_angle(zenith_angle)

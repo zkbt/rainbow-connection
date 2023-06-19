@@ -27,3 +27,6 @@ from tqdm import tqdm
 
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 from scipy.integrate import quad
+
+
+default_wavelength_grid = np.linspace(100, 1000, 901) * u.nm

@@ -56,10 +56,6 @@ def test_grid(dx=1.0, N=500, snr=1000, seed=42, irregular=False):
         )
     )
 
-    # return the results
-    return bx, by, bunc
-
-
 def test_R(R=10, N=500, snr=1000, seed=42, irregular=False):
     """
     a simple test to show how binning to constant R works
@@ -115,9 +111,6 @@ def test_R(R=10, N=500, snr=1000, seed=42, irregular=False):
             R,
         )
     )
-
-    # return the results
-    return bx, by, bunc
 
 
 def test_FCR(supersample=True):

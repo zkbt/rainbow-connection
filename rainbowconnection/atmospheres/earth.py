@@ -39,3 +39,6 @@ class Earth(DiscreteAtmosphere):
         factor = np.exp(paranal_altitude / self.H)
         self._tau_zenith_reference = tau_zenith_paranal * factor
         # to get back to Boulder, set altiude=0.25(=2/8km)
+
+        # set the default wavelengths for simple plots
+        self.wavelength = self._wavelength

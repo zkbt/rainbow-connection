@@ -6,6 +6,7 @@ class Thermal(Spectrum):
 
         self.teff = teff
         self.radius = radius
+        self.wavelength = np.logspace(2, 3, 1000)*u.nm
 
     def intensity(self, wavelength):
         """

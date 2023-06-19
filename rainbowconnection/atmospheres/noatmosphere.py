@@ -27,7 +27,7 @@ class NoAtmosphere(Atmosphere):
         """
 
         # read the transmission spectrum data
-        self.default_wavelengths = np.arange(300, 1000, 1) * u.nm
+        self.wavelength = default_wavelength_grid
 
         # set the zenith angle (or fall back to the current setting)
         self.set_zenith_angle(zenith_angle)
@@ -56,7 +56,7 @@ class NoAtmosphere(Atmosphere):
             self.set_zenith_angle(zenith_angle)
 
         # make sure at least some grid of wavelengths is defined
-        w = self.wavelength(wavelength)
+        w = self.get_wavelength(wavelength)
 
         # return 100% transmission at all wavelengths
         return np.ones(np.shape(w))

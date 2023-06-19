@@ -14,10 +14,9 @@ from ..plottingtools import setup_axes_with_rainbow
 
 def check_wavelength_unit(w):
     w.to("micron")
-
+        
 
 bgkw = dict(color="gray", alpha=0.5, zorder=-100)
-
 
 class Spectrum:
     """
@@ -73,12 +72,12 @@ class Spectrum:
         self.radius = radius * u.Unit("")
 
         # set the default wavelengths to be the actual values
-        self.default_wavelengths = self._wavelength
+        self.wavelength = self._wavelength
 
     def surface_flux(self, wavelength=None):
 
         # make sure at least some grid of wavelengths is defined
-        w = self.wavelength(wavelength)
+        w = self.get_wavelength(wavelength)
 
         original_unit = self._flux.unit
         unitless_flux = self._flux.value
@@ -112,7 +111,7 @@ class Spectrum:
         """
         return 4 * np.pi * self.radius**2
 
-    def wavelength(self, wavelength=None):
+    def get_wavelength(self, wavelength=None):
         """
         A wrapper to ensure at least some grid of wavelengths
         gets defined. A default grid will be assumed, unless
@@ -121,7 +120,7 @@ class Spectrum:
 
         # make sure at least some wavelengths are defined
         if wavelength is None:
-            wavelength = self.default_wavelengths
+            wavelength = self.wavelength
         return wavelength.to("nm")
 
     def spectrum(self, wavelength=None):
@@ -233,7 +232,7 @@ class Spectrum:
             The integral over wavelength
         """
 
-        w = self.default_wavelengths
+        w = self.wavelength
         f = self.spectrum(w)
 
         ok = np.ones(np.shape(w)).astype(bool)
@@ -247,8 +246,8 @@ class Spectrum:
         return np.trapz(f[ok], w[ok])
 
         # np.trapz(f.value, w.value)*f.unit*w.unit
-        # wlower = lower or self.default_wavelengths[0]
-        # wupper = upper or self.default_wavelengths[-1]
+        # wlower = lower or self.wavelength[0]
+        # wupper = upper or self.wavelength[-1]
         # return quad(self.spectrum, wlower, wupper)
 
     def to_sd(self):
@@ -464,7 +463,7 @@ class Spectrum:
             )
 
             # make sure at least some wavelengths are defined
-            w = self.wavelength(wavelength)
+            w = self.get_wavelength(wavelength)
 
             # pull out the spectrum
             f = self.spectrum(w)
@@ -539,7 +538,7 @@ class Spectrum:
             ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
-            w = self.wavelength(wavelength)
+            w = self.get_wavelength(wavelength)
 
             rgb = self.to_color()
 
@@ -628,7 +627,7 @@ class Spectrum:
             ax = setup_axes_with_rainbow(ax=ax, rainbow=rainbow, figsize=figsize)
 
             # make sure at least some wavelengths are defined
-            w = self.wavelength(np.arange(330, 760, 1) * u.nm)
+            w = np.arange(330, 760, 1) * u.nm
             f = self.spectrum(w)
             # KLUDGE?
             norm = np.max(f.value[(w > 400 * u.nm) & (w < 685 * u.nm)]) / 100

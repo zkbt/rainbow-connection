@@ -13,7 +13,7 @@ class Sun(Spectrum):
         self._wavelength = d["wavelength"].data * u.nm
         factor = ((1 * u.au) ** 2 / (1 * u.Rsun) ** 2).decompose()
         self._flux = d["irradiance"].data * u.W / u.nm / u.m ** 2 * factor
-        self.default_wavelengths = self._wavelength
+        self.wavelength = self._wavelength
 
     def integrate(self, lower=None, upper=None):
         """

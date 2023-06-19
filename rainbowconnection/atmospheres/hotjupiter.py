@@ -42,3 +42,6 @@ class HotJupiter(DiscreteAtmosphere):
         z_over_H = ((radiusinkm - reference_radius) / self.H).decompose()
         tau_slant = np.exp(z_over_H)
         self._tau_zenith_reference = (tau_slant / self.fortney_factor()).decompose()
+
+        # set the default wavelengths for simple plots
+        self.wavelength = self._wavelength

@@ -86,17 +86,17 @@ class Sky(Spectrum):
         # calculate the intensity of the illuminated sky (away from the disk)
         thermal_intensity = (
             (1 - albedo)
-            * self.B(self.atmosphere.default_wavelengths)
+            * self.B(self.atmosphere.wavelength)
             * (1 - np.exp(-tau_absorb))
         )
         scattering_intensity = albedo * mean_intensity * (1 - np.exp(-tau_scatter))
         sky_intensity = thermal_intensity + scattering_intensity
 
         # bin this intensity onto the desired wavelengths
-        w = self.wavelength(wavelength)
+        w = self.get_wavelength(wavelength)
         unit = sky_intensity.unit
         neww, newi = bintogrid(
-            self.atmosphere.default_wavelengths,
+            self.atmosphere.wavelength,
             sky_intensity.value,
             newx=w.to("nm").value,
             drop_nans=False,
