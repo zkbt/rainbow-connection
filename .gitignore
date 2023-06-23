@@ -4,6 +4,7 @@ sandbox/
 *.png
 *.pdf
 .DS_Store
+examples/
 
 source-material
 

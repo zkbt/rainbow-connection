@@ -622,5 +622,9 @@ class Sunset(Spectrum):
         Wrapper to add the unextincted spectrum
         in dark gray in the background for context.
         """
-        ax = Spectrum.plot_as_rainbow(self, ax=ax, **kwargs)
-        self.source.plot_as_rainbow(foreground=False, ax=ax)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+
+            ax = Spectrum.plot_as_rainbow(self, ax=ax, **kwargs)
+            warnings.simplefilter("ignore")
+            self.source.plot_as_rainbow(foreground=False, ax=ax)
