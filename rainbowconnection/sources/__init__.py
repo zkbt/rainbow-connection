@@ -1,3 +1,4 @@
+from .spectrum import * 
 from .blank import *
 from .thermal import *
 from .sun import *

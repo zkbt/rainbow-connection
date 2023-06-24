@@ -1,4 +1,4 @@
-from .thermal import *
+from .spectrum import *
 
 
 class Sun(Spectrum):

@@ -5,18 +5,27 @@ modified and simplified here, in order to work better
 with the design of rainbowconnection.
 """
 
+
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
 import numpy as np
 from matplotlib.patches import Polygon
-from six.moves import reduce
 
 # colour-science throws off a lot of warnings; let's mostly ignore those
 import warnings
 
 with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
+    from colour.utilities import (
+        first_item,
+        tstack,
+        ColourWarning, ColourRuntimeWarning, ColourUsageWarning
+    )
+
+    warnings.simplefilter("ignore", category=ColourWarning)
+    warnings.simplefilter("ignore", category=ColourRuntimeWarning)
+    warnings.simplefilter("ignore", category=ColourUsageWarning)
+
 
     from colour.algebra import LinearInterpolator, normalise_maximum
     from colour.colorimetry import (
@@ -44,12 +53,7 @@ with warnings.catch_warnings():
         plot_multi_functions,
         plot_single_sd,
     )
-    from colour.utilities import (
-        domain_range_scale,
-        first_item,
-        tstack,
-        ColourRuntimeWarning,
-    )
+
 
     from colour import SpectralDistribution
 

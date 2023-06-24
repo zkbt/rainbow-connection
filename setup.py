@@ -41,7 +41,7 @@ import os, sys
 # running `python setup.py release` from the command line will post to PyPI
 if "release" in sys.argv[-1]:
     os.system("python setup.py sdist")
-    # uncomment the next line to test out on test.pypi.com/project/tess-zap
+    # uncomment the next line to test out on test.pypi.com/project/{name-of-package}
     # os.system("twine upload --repository-url https://test.pypi.org/legacy/ dist/*")
     os.system("twine upload dist/*")
     os.system("rm -rf dist/rainbow-connection*")
@@ -92,13 +92,12 @@ setup(
         "tqdm",
     ],
     # what version of Python is required?
-    python_requires=">=3.6",
+    python_requires=">=3.9",
     # requirements in `key` will install with `pip install rainbow-connection[key]`
     extras_require={
         "develop": [
             "pytest",
             "black",
-            "jupyter",
             "mkdocs",
             "mkdocs-material",
             "mkdocstrings",
