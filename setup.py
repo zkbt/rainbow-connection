@@ -85,7 +85,6 @@ setup(
         "scipy",
         "ipython",
         "matplotlib>=3.7.1", # 3.6 doesn't have RGB colormesh
-        "jupyter",
         "astropy>=4.0",
         "colour-science>=0.4.2",
         "chromatic-lightcurves>=0.4.5",
@@ -96,6 +95,7 @@ setup(
     # requirements in `key` will install with `pip install rainbow-connection[key]`
     extras_require={
         "develop": [
+            "jupyter",
             "pytest",
             "black",
             "mkdocs",
