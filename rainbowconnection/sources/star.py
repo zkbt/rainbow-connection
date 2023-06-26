@@ -1,4 +1,4 @@
-from .spectrum import *
+from .spectra import *
 from chromatic import get_phoenix_photons
 
 

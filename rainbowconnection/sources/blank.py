@@ -1,4 +1,4 @@
-from .spectrum import *
+from .spectra import *
 
 
 class Blank(Spectrum):
