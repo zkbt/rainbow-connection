@@ -1,5 +1,5 @@
 from .spectra import *
-from .thermal import Thermal
+from .planck import Thermal
 
 __all__ = ["LightBulb", "Incandescent", "Sodium", "EmissionLines", "WhiteLED"]
 
