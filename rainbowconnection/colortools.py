@@ -58,7 +58,11 @@ with warnings.catch_warnings():
     from colour import SpectralDistribution
 
     # define a standard set of color-matching functions
-    CMFs = first_item(filter_cmfs("CIE 2015 2 Degree Standard Observer").values())
+    try:
+        CMFs = first_item(filter_cmfs("CIE 2015 2 Degree Standard Observer").values())
+    except:
+        CMFs = first_item(filter_cmfs("CIE 2012 2 Degree Standard Observer").values())
+    # (try-except is for spanning colour versions compatible with python 3.8-3.9?)
 
     def plot_simple_rainbow(
         ax=None,
