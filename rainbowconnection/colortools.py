@@ -11,6 +11,7 @@ from scipy.interpolate import interp1d
 
 import numpy as np
 from matplotlib.patches import Polygon
+import astropy.units as u
 
 # colour-science throws off a lot of warnings; let's mostly ignore those
 import warnings
@@ -67,6 +68,7 @@ with warnings.catch_warnings():
     def plot_simple_rainbow(
         ax=None,
         flux=None,
+        unit=u.micron,
         **kwargs
     ):
         """
@@ -127,8 +129,9 @@ with warnings.catch_warnings():
 
         # draw bars, with the colors at each vertical stripe
         padding = 0.1
+        wavelength_in_unit = ((wavelength - padding / 2)*u.nm).to(unit)
         ax.bar(
-            x=wavelength - padding / 2,
+            x=wavelength_in_unit,
             height=max(flux),
             width=1 + padding,
             color=colours,

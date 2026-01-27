@@ -87,7 +87,7 @@ class Sodium(LightBulb):
             flux += gauss(w, x0=l, sigma=width)
 
         # return the flux, in convenient units
-        return (brightness * flux).to("W/(nm * m**2)")
+        return (brightness * flux).to("W/(micron * m**2)")
 
 
 class EmissionLines(LightBulb):

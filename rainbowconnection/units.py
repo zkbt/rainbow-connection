@@ -4,9 +4,9 @@ A few shortcuts for dealing with units.
 import astropy.units as u
 
 # define some useful units
-spectral_luminosity_unit = u.W / u.nm
-spectral_flux_unit = u.W / u.nm / u.m**2
-spectral_intensity_unit = u.W / u.nm / u.m**2 / u.sr
+spectral_luminosity_unit = u.W / u.micron
+spectral_flux_unit = u.W / u.micron / u.m**2
+spectral_intensity_unit = u.W / u.micron / u.m**2 / u.sr
 
 luminosity_unit = u.W
 flux_unit = u.W / u.m**2
