@@ -11,9 +11,17 @@ colors_to_wavelengths = dict(
     V=430,
 )
 
+# KLUDGE! FIX ROYBIV UNITS!
+
 
 def setup_axes_with_rainbow(
-    ax=None, rainbow=True, figsize=None, height_ratio=0.1, roygbiv=False
+    ax=None,
+    rainbow=True,
+    figsize=None,
+    height_ratio=0.05,
+    roygbiv=False,
+    unit=u.micron,
+    roygbiv_fontsize=8,
 ):
     # create new ax(s), unless we're supposed to over plot on one
     if ax is None:
@@ -26,10 +34,19 @@ def setup_axes_with_rainbow(
             # plot a cartoon rainbow, in a box above
             ax_rainbow = plt.subplot(gs[0])
             plt.sca(ax_rainbow)
-            plot_simple_rainbow(ax=ax_rainbow)
+            plot_simple_rainbow(ax=ax_rainbow, unit=unit)
             if roygbiv:
                 for k, v in colors_to_wavelengths.items():
-                    plt.text(v, 1, k, ha="center", va="bottom", color="gray")
+                    wavelength_in_unit = (v * u.nm).to(unit)
+                    plt.text(
+                        wavelength_in_unit,
+                        1,
+                        k,
+                        ha="center",
+                        va="bottom",
+                        color="gray",
+                        fontsize=roygbiv_fontsize,
+                    )
 
             ax_rainbow.get_yaxis().set_visible(False)
             ax_rainbow.get_xaxis().set_visible(False)

@@ -29,7 +29,7 @@ class Atmosphere:
         # make sure at least some wavelengths are defined
         if wavelength is None:
             wavelength = self.wavelength
-        return wavelength.to("nm")
+        return wavelength.to("micron")
 
     def plot(
         self,
@@ -361,3 +361,44 @@ class DiscreteAtmosphere(Atmosphere):
 
         # return the binned transmission
         return newt
+
+class FilterAtmosphere(DiscreteAtmosphere):
+    """
+    The FilterAtmosphere represents an atmosphere
+    whose transmission as a function of wavelength
+    can be represented as a grid of zenithward optical
+    depths. Most pre-calculated models will fall
+    into this category.
+    """
+
+    def __init__(self, wavelength, transmission, zenith_angle=0.0 * u.deg, altitude=0.0, **kwargs):
+        """
+        In inherited classes, this initialization relies on the
+        existence of a method called ".read_transmission"
+        that will create the attributes:
+            ._wavelengths (with units of wavelength)
+            ._tau_zenith_reference (unitless)
+            .H (with units of length)
+            .radius (with units of length)
+        """
+
+        self._wavelength = wavelength
+        self._transmission_zenith = transmission
+
+        # define geometry of the atmosphere (how spherical?)
+        # KLUDGE!
+        self.H = 10*u.km
+        self.radius = 1 * u.Rearth
+
+        # the file is for Cerro Paranal at 2640m
+        # let's move it down to sea level
+        self._tau_zenith_reference = -np.log(self._transmission_zenith)
+
+
+        # set the zenith angle (or fall back to the current setting)
+        self.set_zenith_angle(zenith_angle)
+
+        # set the altitude at which we're hovering
+        self.set_altitude(altitude)
+    def guess_scattering(self):
+        pass

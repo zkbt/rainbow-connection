@@ -122,7 +122,7 @@ class Spectrum:
         # make sure at least some wavelengths are defined
         if wavelength is None:
             wavelength = self.wavelength
-        return wavelength.to("nm")
+        return wavelength.to("micron")
 
     def spectrum(self, wavelength=None):
         """
@@ -208,6 +208,41 @@ class Spectrum:
         # update this copy's distance and return
         new.distance = distance
         return new
+
+    def filter(self, f):
+        """
+        Create a new Spectrum representing the current
+        light source viewed through some filter.
+
+        Parameters
+        ----------
+        f : function 
+            The filter transmission function. This function 
+            must take wavelength (with units) as an input.
+
+        Returns
+        -------
+        spectrum : Spectrum
+            A new Spectrum, with the distance attached.
+        """
+
+        # create a copy of the current spectrum
+        new = copy.deepcopy(self)
+
+        # update this copy's distance and return
+        new.filter = f
+        try:
+            new._flux = self._flux*f(self._wavelength)
+        except AttributeError:
+            def surface_flux(self, wavelength=None):
+                w = self.get_wavelength(wavelength)
+                unfiltered_flux = self.surface_flux(wavelength=w)
+                filtered_flux = unfiltered_flux*f(w)
+                return filtered_flux
+            new.surface_flux = surface_flux
+        return new #BLERG! DOESN'T WORK!
+
+
 
     # FIXME -- for analytic functions, it'd help to define some kind of
     # a bounding box in wavelength space, so this integral could be done
@@ -481,7 +516,7 @@ class Spectrum:
                     plotting without the `color='auto'` option.
                     """
                     )
-            plt.plot(w, f, color=color, label=self, **kwargs)
+            self.plotted = plt.plot(w, f, color=color, label=self, **kwargs)
 
             # add the axis labels
             wunit = w.unit.to_string("latex_inline")
@@ -731,3 +766,17 @@ class Spectrum:
             plt.xticks([])
             plt.yticks([])
             plt.axis("off")
+
+
+
+'''
+class FilteredSpectrum(Spectrum):
+    def __init__(self, f, unfiltered):
+        self.filter = f 
+        self.unfiltered = unfiltered
+
+    def surface_flux(self, wavelength):
+        w = self.unfiltered.get_wavelength(wavelength)
+        unfiltered_flux = self.unfiltered.surface_flux(w)
+        filtered_flux = unfiltered_flux*self.filter(w)
+        return filtered_flux'''
